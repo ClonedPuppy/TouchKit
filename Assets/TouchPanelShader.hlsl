@@ -48,29 +48,12 @@ SamplerState normal_s : register(s3);
 Texture2D occlusion : register(t4);
 SamplerState occlusion_s : register(s4);
 
-
-// new version
 struct ButtonData
 {
 	float2 button[10];
 };
 
 ButtonData buttons;
-
-//struct ButtonData
-//{
-//	float2 button01;
-//	float2 button02;
-//	float2 button03;
-//	float2 button04;
-//	float2 button05;
-//	float2 button06;
-//	float2 button07;
-//	float2 button08;
-//	float2 button09;
-//	float2 button10;
-//};
-//ButtonData buttons;
 
 struct SliderData
 {
@@ -264,17 +247,17 @@ float4 ps(psIn input) : SV_TARGET
 	
 	//for (uint i = 0; i < 4; i++)
 	//{
-	glow1 += roundedFrame(texCoord, buttons.button01, 0.04, 0.01, 0.025);
+	glow1 += roundedFrame(texCoord, float2(buttons.button[1].x, buttons.button[1].y), 0.04, 0.01, 0.025);
 	
-	glow1 += roundedFrame(texCoord, buttons.button02, 0.04, 0.01, 0.025);
+	//glow1 += roundedFrame(texCoord, buttons.button02, 0.04, 0.01, 0.025);
 	
-	glow1 += roundedFrame(texCoord, buttons.button03, 0.04, 0.01, 0.025);
+	//glow1 += roundedFrame(texCoord, buttons.button03, 0.04, 0.01, 0.025);
 	//}
-	float glow2 = rectangle2(texCoord, buttons.button05, float2(0.3, 0.1));
+	//float glow2 = rectangle2(texCoord, buttons.button05, float2(0.3, 0.1));
 	
-	float glow3 = FingerGlowing(input.world.xyz, input.normal);
+	//float glow3 = FingerGlowing(input.world.xyz, input.normal);
 
-	float4 col = float4(lerp(input.color.rgb, float3(255, 255, 255), (glow1.rrr + glow2.rrr + glow3.rrr)), input.color.a);
+	float4 col = float4(lerp(input.color.rgb, float3(255, 255, 255), (glow1.rrr)), input.color.a);
 	
 	return float4(color + emissive, albedo.a) * col;
 	}

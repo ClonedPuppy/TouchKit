@@ -27,9 +27,10 @@ namespace TouchMenuApp
         [StructLayout(LayoutKind.Sequential)]
         struct ButtonData
         {
-            [MarshalAs(UnmanagedType.ByValArray, SizeConst = 10)]
-            public Vec2[] buttons = new Vec2[10];
+            [MarshalAs(UnmanagedType.ByValArray, SizeConst = 10)] 
+            public Vec2[] button;
         }
+        ButtonData buttons;
 
         [StructLayout(LayoutKind.Sequential)]
         struct SliderData
@@ -45,8 +46,6 @@ namespace TouchMenuApp
             public Vec3 slider09;
             public Vec3 slider10;
         }
-
-        //ButtonData buttons;
         SliderData sliders;
 
         public SKSettings Settings => new SKSettings
@@ -67,10 +66,12 @@ namespace TouchMenuApp
         Material touchPanelMat;
 
         List<Vec2> buttonPosList = new List<Vec2>();
+        Vec2 testVec2 = new Vec2(0.33f, 0.16f);
         int buttonAmount = 3;
 
         public void Init()
         {
+            buttons.button = new Vec2[10] { testVec2, new Vec2(0.1f, 0.5f), testVec2, testVec2, testVec2, testVec2, testVec2, testVec2, testVec2, testVec2 };
 
             sliders = new SliderData
             {
@@ -100,38 +101,25 @@ namespace TouchMenuApp
             touchPanelMat.Transparency = Transparency.Blend;
             touchPanel.Visuals[0].Material = touchPanelMat;
 
-            //button01 = touchPanel.FindNode("button01");
-
             float longestSide = FindLongestSide(touchPanel);
 
-            //FieldInfo[] members = buttons.GetType().GetFields();
-
-            //object tempValueToAssign = "A test string";
-
-            //foreach (FieldInfo fi in members)
+            //foreach (var item in touchPanel.Nodes)
             //{
-            //    // perform update of FieldInfo fi
-            //    fi.SetValue(buttons, tempValueToAssign);
+            //    if (item.Name == "panel")
+            //    {
+            //        System.Console.WriteLine("nope"); ;
+            //    }
+            //    else
+            //    {
+            //        float _positionX = (item.LocalTransform.Pose.position.x + (touchPanel.Bounds.dimensions.x / 2)) / longestSide;
+            //        float _positionY = (item.LocalTransform.Pose.position.z + (touchPanel.Bounds.dimensions.z / 2)) / longestSide;
+
+
+            //        buttonPosList.Add(new Vec2(_positionX, _positionY));
+
+            //        System.Console.WriteLine(item.Name + "  Original x pos: " + item.LocalTransform.Pose.position.x + "  Tweaked: " + _positionX);
+            //    }
             //}
-
-            int i = 0;
-            foreach (var item in touchPanel.Nodes)
-            {
-                if (item.Name == "panel")
-                {
-                    System.Console.WriteLine("nope"); ;
-                }
-                else
-                {
-                    float _positionX = (item.LocalTransform.Pose.position.x + (touchPanel.Bounds.dimensions.x / 2)) / longestSide;
-                    float _positionY = (item.LocalTransform.Pose.position.z + (touchPanel.Bounds.dimensions.z / 2)) / longestSide;
-
-
-                    buttonPosList.Add(new Vec2(_positionX, _positionY));
-
-                    System.Console.WriteLine(item.Name + "  Original x pos: " + item.LocalTransform.Pose.position.x + "  Tweaked: " + _positionX);
-                }
-            }
 
             //buttons = new ButtonData
             //{
@@ -146,6 +134,11 @@ namespace TouchMenuApp
             //    button09 = buttonPosList[8],
             //    button10 = buttonPosList[9]
             //};
+
+            foreach (var item in buttons.button)
+            {
+                System.Console.WriteLine(item.x);
+            }
         }
 
         public void Step()
