@@ -48,12 +48,7 @@ SamplerState normal_s : register(s3);
 Texture2D occlusion : register(t4);
 SamplerState occlusion_s : register(s4);
 
-struct ButtonData
-{
-	float2 button[10];
-};
-
-ButtonData buttons;
+float4 button[10];
 
 struct SliderData
 {
@@ -130,9 +125,9 @@ float2 brdf_appx(half Roughness, half NoV)
 	return AB;
 }
 
-float roundedFrame(float2 uv, float2 pos, float2 size, float radius, float thickness)
+float roundedFrame(float2 uv, float4 pos, float2 size, float radius, float thickness)
 {
-	float d = length(max(abs(uv - pos), size) - size) - radius;
+	float d = length(max(abs(uv - float2(pos.x, pos.y)), size) - size) - radius;
 	return smoothstep(0.55, 0.45, abs(d / thickness) * 5.0);
 }
 
@@ -245,19 +240,14 @@ float4 ps(psIn input) : SV_TARGET
 	float3 color = (kD * diffuse + specular * ao);
 	float glow1 = 0;
 	
-	//for (uint i = 0; i < 4; i++)
-	//{
-	glow1 += roundedFrame(texCoord, float2(buttons.button[1].x, buttons.button[1].y), 0.04, 0.01, 0.025);
-	
-	//glow1 += roundedFrame(texCoord, buttons.button02, 0.04, 0.01, 0.025);
-	
-	//glow1 += roundedFrame(texCoord, buttons.button03, 0.04, 0.01, 0.025);
-	//}
-	//float glow2 = rectangle2(texCoord, buttons.button05, float2(0.3, 0.1));
+	for (uint i = 0; i < buttonAmount; i++)
+	{
+		glow1 += roundedFrame(texCoord, button[i], 0.04, 0.01, 0.025);
+	}
 	
 	//float glow3 = FingerGlowing(input.world.xyz, input.normal);
 
 	float4 col = float4(lerp(input.color.rgb, float3(255, 255, 255), (glow1.rrr)), input.color.a);
 	
 	return float4(color + emissive, albedo.a) * col;
-	}
+}

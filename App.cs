@@ -1,34 +1,16 @@
 ﻿using StereoKit;
 using System.Collections.Generic;
-using System.Reflection;
 using System.Runtime.InteropServices;
 
 namespace TouchMenuApp
 {
     public class App
     {
-        //[StructLayout(LayoutKind.Sequential)]
-        //struct ButtonData
-        //{
-        //    public Vec2 button01;
-        //    public Vec2 button02;
-        //    public Vec2 button03;
-        //    public Vec2 button04;
-        //    public Vec2 button05;
-        //    public Vec2 button06;
-        //    public Vec2 button07;
-        //    public Vec2 button08;
-        //    public Vec2 button09;
-        //    public Vec2 button10;
-        //}
-
-        //Vec2[] buttons = new Vec2[10];
-
         [StructLayout(LayoutKind.Sequential)]
         struct ButtonData
         {
-            [MarshalAs(UnmanagedType.ByValArray, SizeConst = 10)] 
-            public Vec2[] button;
+            [MarshalAs(UnmanagedType.ByValArray, SizeConst = 10)]
+            public Vec4[] button;
         }
         ButtonData buttons;
 
@@ -66,12 +48,21 @@ namespace TouchMenuApp
         Material touchPanelMat;
 
         List<Vec2> buttonPosList = new List<Vec2>();
-        Vec2 testVec2 = new Vec2(0.33f, 0.16f);
+        Vec4 testVec4 = new Vec4(0.33f, 0.16f, 0, 0);
         int buttonAmount = 3;
 
         public void Init()
         {
-            buttons.button = new Vec2[10] { testVec2, new Vec2(0.1f, 0.5f), testVec2, testVec2, testVec2, testVec2, testVec2, testVec2, testVec2, testVec2 };
+            buttons.button = new Vec4[10] { new Vec4(0.5f, 0.16f, 0, 0),
+                                            new Vec4(0.33f, 0.26f, 0, 0),
+                                            testVec4,
+                                            testVec4,
+                                            testVec4,
+                                            testVec4,
+                                            testVec4,
+                                            testVec4,
+                                            testVec4,
+                                            testVec4 };
 
             sliders = new SliderData
             {
@@ -103,42 +94,32 @@ namespace TouchMenuApp
 
             float longestSide = FindLongestSide(touchPanel);
 
-            //foreach (var item in touchPanel.Nodes)
-            //{
-            //    if (item.Name == "panel")
-            //    {
-            //        System.Console.WriteLine("nope"); ;
-            //    }
-            //    else
-            //    {
-            //        float _positionX = (item.LocalTransform.Pose.position.x + (touchPanel.Bounds.dimensions.x / 2)) / longestSide;
-            //        float _positionY = (item.LocalTransform.Pose.position.z + (touchPanel.Bounds.dimensions.z / 2)) / longestSide;
+            var i = 0;
+            foreach (var item in touchPanel.Nodes)
+            {
+                if (item.Name == "panel")
+                {
+                    System.Console.WriteLine("nope"); ;
+                }
+                else
+                {
+                    float _positionX = (item.LocalTransform.Pose.position.x + (touchPanel.Bounds.dimensions.x / 2)) / longestSide;
+                    float _positionY = (item.LocalTransform.Pose.position.z + (touchPanel.Bounds.dimensions.z / 2)) / longestSide;
 
-
-            //        buttonPosList.Add(new Vec2(_positionX, _positionY));
-
-            //        System.Console.WriteLine(item.Name + "  Original x pos: " + item.LocalTransform.Pose.position.x + "  Tweaked: " + _positionX);
-            //    }
-            //}
-
-            //buttons = new ButtonData
-            //{
-            //    button01 = buttonPosList[0],
-            //    button02 = buttonPosList[1],
-            //    button03 = buttonPosList[2],
-            //    button04 = buttonPosList[3],
-            //    button05 = buttonPosList[4],
-            //    button06 = buttonPosList[5],
-            //    button07 = buttonPosList[6],
-            //    button08 = buttonPosList[7],
-            //    button09 = buttonPosList[8],
-            //    button10 = buttonPosList[9]
-            //};
+                    buttons.button[i] = new Vec4(_positionX, _positionY, 0, 0);
+                    //buttonPosList.Add(new Vec2(_positionX, _positionY));
+                    i++;
+                    System.Console.WriteLine(item.Name + "  Original x pos: " + item.LocalTransform.Pose.position.x + "  Tweaked: " + _positionX);
+                }
+            }
 
             foreach (var item in buttons.button)
             {
                 System.Console.WriteLine(item.x);
             }
+
+            touchPanelMat.SetData<ButtonData>("button", buttons);
+            touchPanelMat.SetInt("buttonAmount", i);
         }
 
         public void Step()
@@ -149,8 +130,7 @@ namespace TouchMenuApp
             UI.Handle("Cube", ref cubePose, touchPanel.Bounds);
             touchPanel.Draw(cubePose.ToMatrix());
 
-            touchPanelMat.SetData<ButtonData>("buttons", buttons);
-            touchPanelMat.SetInt("buttonAmount", buttonAmount);
+
         }
 
         float FindLongestSide(Model model)
