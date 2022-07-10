@@ -48,22 +48,9 @@ SamplerState normal_s : register(s3);
 Texture2D occlusion : register(t4);
 SamplerState occlusion_s : register(s4);
 
-float4 button[10];
+float4 button[20];
 
-struct SliderData
-{
-	float3 slider01;
-	float3 slider02;
-	float3 slider03;
-	float3 slider04;
-	float3 slider05;
-	float3 slider06;
-	float3 slider07;
-	float3 slider08;
-	float3 slider09;
-	float3 slider10;
-};
-SliderData sliders;
+float4 slider[20];
 
 struct vsIn
 {
@@ -192,7 +179,7 @@ float2 FingerGlowExing(float3 world_pos, float3 world_norm)
 		float dist_from_finger = length(to_finger);
 		float dist_on_plane = length(world_pos - on_plane);
 		ring = max(ring, saturate(1 - abs(d * 0.5 - dist_on_plane) * 600));
-		dist = min(dist, dist_from_finger);
+		dist = min(dist, dist_from_finger * 2);
 	}
 
 	return float2(dist, ring);
@@ -207,8 +194,12 @@ float FingerGlowing(float3 world_pos, float3 world_norm)
 
 float4 ps(psIn input) : SV_TARGET
 {
-	float2 texCoord = input.uv;
-	float4 glowColor = float4(1, 0, 0, 0);
+	float glow1 = 0;
+	
+	for (uint i = 0; i < buttonAmount; i++)
+	{
+		glow1 += roundedFrame(input.uv, button[i], 0.03, 0.01, 0.025);
+	}
 	
 	float4 albedo = diffuse.Sample(diffuse_s, input.uv) * input.color;
 	float3 emissive = emission.Sample(emission_s, input.uv).rgb * emission_factor.rgb;
@@ -238,14 +229,8 @@ float4 ps(psIn input) : SV_TARGET
 
 	float3 diffuse = albedo.rgb * input.irradiance * ao;
 	float3 color = (kD * diffuse + specular * ao);
-	float glow1 = 0;
 	
-	for (uint i = 0; i < buttonAmount; i++)
-	{
-		glow1 += roundedFrame(texCoord, button[i], 0.04, 0.01, 0.025);
-	}
-	
-	//float glow3 = FingerGlowing(input.world.xyz, input.normal);
+	glow1 += FingerGlowing(input.world.xyz, input.normal);
 
 	float4 col = float4(lerp(input.color.rgb, float3(255, 255, 255), (glow1.rrr)), input.color.a);
 	
