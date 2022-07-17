@@ -166,6 +166,35 @@ float rectangle2(float2 uv, float2 pos, float2 size)
 //	return dist;
 //}
 
+struct FingerDistStruct
+{
+	float from_finger;
+	float on_plane;
+};
+
+FingerDistStruct FingerDistInfo(float3 world_pos, float3 world_norm)
+{
+	FingerDistStruct result;
+	result.from_finger = 10000;
+	result.on_plane = 10000;
+	
+	for (int i = 0; i < 2; i++)
+	{
+		float3 to_finger = sk_fingertip[i].xyz - world_pos;
+		float d = dot(world_norm, to_finger);
+		float3 on_plane = sk_fingertip[i].xyz - d * world_norm;
+
+		// Also make distances behind the plane negative
+		float finger_dist = length(to_finger);
+		if (abs(result.from_finger) > finger_dist)
+			result.from_finger = finger_dist * sign(d);
+		
+		result.on_plane = min(result.on_plane, length(world_pos - on_plane));
+	}
+
+	return result;
+}
+
 float2 FingerGlowExing(float3 world_pos, float3 world_norm)
 {
 	float dist = 1;
@@ -201,6 +230,8 @@ float4 ps(psIn input) : SV_TARGET
 		glow1 += roundedFrame(input.uv, button[i], 0.03, 0.01, 0.025);
 	}
 	
+	FingerDistStruct fingerDistance = FingerDistInfo(input.world.xyz, input.normal);
+	
 	float4 albedo = diffuse.Sample(diffuse_s, input.uv) * input.color;
 	float3 emissive = emission.Sample(emission_s, input.uv).rgb * emission_factor.rgb;
 	float2 metal_rough = metal.Sample(metal_s, input.uv).gb; // b is metallic, rough is g
@@ -232,7 +263,7 @@ float4 ps(psIn input) : SV_TARGET
 	
 	glow1 += FingerGlowing(input.world.xyz, input.normal);
 
-	float4 col = float4(lerp(input.color.rgb, float3(255, 255, 255), (glow1.rrr)), input.color.a);
+	float4 col = float4(lerp(input.color.rgb, float3(255, 255, 255), (fingerDistance.from_finger * fingerDistance.on_plane).rrr), input.color.a);
 	
 	return float4(color + emissive, albedo.a) * col;
 }
