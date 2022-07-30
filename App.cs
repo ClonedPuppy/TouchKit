@@ -79,7 +79,8 @@ namespace TouchMenuApp
                     buttons.button[i] = new Vec4(_positionX, _positionY, 0, 0);
                     buttonList.Add(new Vec4(_positionX, _positionY, 0, 0));
                     i++;
-                    System.Console.WriteLine(item.Name + "  Original x pos: " + item.LocalTransform.Pose.position.x + "  Tweaked: " + _positionX);
+                    //System.Console.WriteLine(item.Name + "  Original x pos: " + item.LocalTransform.Pose.position.x + "  Tweaked: " + _positionX);
+                    System.Console.WriteLine(item.Name);
                 }
             }
 

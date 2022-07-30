@@ -112,18 +112,61 @@ float2 brdf_appx(half Roughness, half NoV)
 	return AB;
 }
 
-float roundedFrame(float2 uv, float4 pos, float2 size, float radius, float thickness)
+struct FingerDistStruct
 {
+	float from_finger;
+	float on_plane;
+};
+
+FingerDistStruct FingerDistInfo(float3 world_pos, float3 world_norm)
+{
+	FingerDistStruct result;
+	result.from_finger = 10000;
+	result.on_plane = 10000;
+	
+	for (int i = 0; i < 2; i++)
+	{
+		float3 to_finger = sk_fingertip[i].xyz - world_pos;
+		float d = dot(world_norm, to_finger);
+		float3 on_plane = sk_fingertip[i].xyz + d * world_norm;
+
+		// Also make distances behind the plane negative
+		//float finger_dist = length(to_finger);
+		//if (abs(result.from_finger) > finger_dist)
+		//	//result.from_finger = 10000;
+		//	result.from_finger = finger_dist * sign(d);
+		
+		if (d <= 0)
+		{
+			result.on_plane = 1;
+		}
+			result.on_plane = min(result.on_plane, length(world_pos - on_plane));
+		}
+
+	return result;
+}
+
+float drawButton(FingerDistStruct fingerInfo, float2 uv, float4 pos, float2 size, float radius, float thickness)
+{
+
 	float d = length(max(abs(uv - float2(pos.x, pos.y)), size) - size) - radius;
-	return smoothstep(0.55, 0.45, abs(d / thickness) * 5.0);
+	float e = length(max(abs(uv - float2(pos.x, pos.y)), min(fingerInfo.on_plane.x, size) - 0.005) - (min(fingerInfo.on_plane.x, size) - 0.005)) - (radius - 0.005);
+	//float e = length(max(abs(uv - float2(pos.x, pos.y)), size - 0.005) - (size - 0.005)) - (radius - 0.005);
+	
+	return smoothstep(0.55, 0.45, abs(d / thickness) * 5.0) + smoothstep(0.66, 0.33, e / thickness * 5.0);
 }
 
-float rectangle2(float2 uv, float2 pos, float2 size)
-{
-	return (step(pos.x, uv.x) - step(pos.x + size.x, uv.x))
-       * (step(pos.y - size.y, uv.y) - step(pos.y, uv.y));
-}
+//float rectangle2(float2 uv, float2 pos, float2 size)
+//{
+//	return (step(pos.x, uv.x) - step(pos.x + size.x, uv.x))
+//       * (step(pos.y - size.y, uv.y) - step(pos.y, uv.y));
+//}
 
+//float roundedRectangle(vec2 pos, vec2 size, float radius, float thickness)
+//{
+//	float d = length(max(abs(uv - pos), size) - size) - radius;
+//	return smoothstep(0.66, 0.33, d / thickness * 5.0);
+//}
 //float FingerGlowExing(float3 world_pos, float3 world_norm, float2 texCoord)
 //{
 //	float dist = 0;
@@ -166,35 +209,6 @@ float rectangle2(float2 uv, float2 pos, float2 size)
 //	return dist;
 //}
 
-struct FingerDistStruct
-{
-	float from_finger;
-	float on_plane;
-};
-
-FingerDistStruct FingerDistInfo(float3 world_pos, float3 world_norm)
-{
-	FingerDistStruct result;
-	result.from_finger = 10000;
-	result.on_plane = 10000;
-	
-	for (int i = 0; i < 2; i++)
-	{
-		float3 to_finger = sk_fingertip[i].xyz - world_pos;
-		float d = dot(world_norm, to_finger);
-		float3 on_plane = sk_fingertip[i].xyz - d * world_norm;
-
-		// Also make distances behind the plane negative
-		float finger_dist = length(to_finger);
-		if (abs(result.from_finger) > finger_dist)
-			result.from_finger = finger_dist * sign(d);
-		
-		result.on_plane = min(result.on_plane, length(world_pos - on_plane));
-	}
-
-	return result;
-}
-
 float2 FingerGlowExing(float3 world_pos, float3 world_norm)
 {
 	float dist = 1;
@@ -223,14 +237,14 @@ float FingerGlowing(float3 world_pos, float3 world_norm)
 
 float4 ps(psIn input) : SV_TARGET
 {
+	FingerDistStruct fingerDistance = FingerDistInfo(input.world.xyz, input.normal);
+	
 	float glow1 = 0;
 	
 	for (uint i = 0; i < buttonAmount; i++)
 	{
-		glow1 += roundedFrame(input.uv, button[i], 0.03, 0.01, 0.025);
+		glow1 += drawButton(fingerDistance, input.uv, button[i], 0.03, 0.01, 0.025);
 	}
-	
-	FingerDistStruct fingerDistance = FingerDistInfo(input.world.xyz, input.normal);
 	
 	float4 albedo = diffuse.Sample(diffuse_s, input.uv) * input.color;
 	float3 emissive = emission.Sample(emission_s, input.uv).rgb * emission_factor.rgb;
@@ -261,9 +275,11 @@ float4 ps(psIn input) : SV_TARGET
 	float3 diffuse = albedo.rgb * input.irradiance * ao;
 	float3 color = (kD * diffuse + specular * ao);
 	
-	glow1 += FingerGlowing(input.world.xyz, input.normal);
+	//glow1 += FingerGlowing(input.world.xyz, input.normal);
+	
+	//glow1 += dot(fingerDistance.on_plane, float2(button[0].x, button[0].y));
 
-	float4 col = float4(lerp(input.color.rgb, float3(255, 255, 255), (fingerDistance.from_finger * fingerDistance.on_plane).rrr), input.color.a);
+	float4 col = float4(lerp(input.color.rgb, float3(255, 255, 255), glow1.rrr), input.color.a);
 	
 	return float4(color + emissive, albedo.a) * col;
 }
