@@ -27,7 +27,8 @@ namespace TouchMenuApp
             displayPreference = DisplayMode.MixedReality
         };
 
-        Pose cubePose = new Pose(0, 0, -0.5f, Quat.FromAngles(90, 0, 0));
+        Pose cubePose = new Pose(0, 0, 0, Quat.FromAngles(0, 180, 0));
+        //Pose cubePose = new Pose(0, 0, 0, Quat.Identity);
         Model touchPanel;
         Model sphere;
 
@@ -73,8 +74,8 @@ namespace TouchMenuApp
                 }
                 else
                 {
-                    float _positionX = (item.LocalTransform.Pose.position.x + (touchPanel.Bounds.dimensions.x / 2)) / longestSide;
-                    float _positionY = (item.LocalTransform.Pose.position.z + (touchPanel.Bounds.dimensions.z / 2)) / longestSide;
+                    float _positionX = (item.ModelTransform.Pose.position.x + (touchPanel.Bounds.dimensions.x / 2)) / longestSide;
+                    float _positionY = (item.ModelTransform.Pose.position.z + (touchPanel.Bounds.dimensions.z / 2)) / longestSide;
 
                     buttons.button[i] = new Vec4(_positionX, _positionY, 0, 0);
                     buttonList.Add(new Vec4(_positionX, _positionY, 0, 0));
@@ -86,6 +87,8 @@ namespace TouchMenuApp
 
             touchPanelMat.SetInt("buttonAmount", i);
             touchPanelMat.SetData<ButtonData>("button", buttons);
+
+            Renderer.CameraRoot = Matrix.TR(V.XYZ(0, 0.5f, 0.185f), Quat.FromAngles(-69, 0, 0));
         }
 
         public void Step()
@@ -95,6 +98,11 @@ namespace TouchMenuApp
 
             UI.Handle("Cube", ref cubePose, touchPanel.Bounds);
             touchPanel.Draw(cubePose.ToMatrix());
+
+            foreach (var item in touchPanel.Nodes)
+            {
+                sphere.Draw(Matrix.TS(item.LocalTransform.Pose.position, 0.01f));
+            }
         }
 
         float FindLongestSide(Model model)

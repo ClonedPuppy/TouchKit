@@ -81,6 +81,7 @@ psIn vs(vsIn input, uint id : SV_InstanceID)
 	o.pos = mul(float4(o.world, 1), sk_viewproj[o.view_id]);
 
 	o.normal = normalize(mul(float4(input.norm, 0), sk_inst[id].world).xyz);
+	//o.uv = ((input.uv + float2(-uvXoffset, -uvYoffset)) * float2(uScale, vScale) * tex_scale) * float2(1, -1);
 	o.uv = (input.uv + float2(-uvXoffset, -uvYoffset)) * float2(uScale, vScale) * tex_scale;
 	o.color = input.color * sk_inst[id].color * color;
 	o.irradiance = Lighting(o.normal);
@@ -154,6 +155,14 @@ float drawButton(FingerDistStruct fingerInfo, float2 uv, float4 pos, float2 size
 	//float e = length(max(abs(uv - float2(pos.x, pos.y)), size - 0.005) - (size - 0.005)) - (radius - 0.005);
 	
 	return smoothstep(0.55, 0.45, abs(d / thickness) * 5.0) + smoothstep(0.66, 0.33, e / thickness * 5.0);
+}
+
+float drawButton1(FingerDistStruct fingerInfo, float2 uv, float4 pos, float2 size, float radius, float thickness)
+{
+
+	float d = length(max(abs(uv - float2(pos.x, pos.y)), size) - size) - radius;
+	
+	return smoothstep(0.55, 0.45, abs(d / thickness) * 5.0);
 }
 
 //float rectangle2(float2 uv, float2 pos, float2 size)
@@ -239,11 +248,11 @@ float4 ps(psIn input) : SV_TARGET
 {
 	FingerDistStruct fingerDistance = FingerDistInfo(input.world.xyz, input.normal);
 	
-	float glow1 = 0;
+	float buttons = 0;
 	
 	for (uint i = 0; i < buttonAmount; i++)
 	{
-		glow1 += drawButton(fingerDistance, input.uv, button[i], 0.03, 0.01, 0.025);
+		buttons += drawButton(fingerDistance, input.uv, button[i], 0.03, 0.01, 0.025);
 	}
 	
 	float4 albedo = diffuse.Sample(diffuse_s, input.uv) * input.color;
@@ -279,7 +288,7 @@ float4 ps(psIn input) : SV_TARGET
 	
 	//glow1 += dot(fingerDistance.on_plane, float2(button[0].x, button[0].y));
 
-	float4 col = float4(lerp(input.color.rgb, float3(255, 255, 255), glow1.rrr), input.color.a);
+	float4 col = float4(lerp(input.color.rgb, float3(255, 255, 255), buttons.rrr), input.color.a);
 	
 	return float4(color + emissive, albedo.a) * col;
 }
