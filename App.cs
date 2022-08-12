@@ -70,7 +70,7 @@ namespace TouchMenuApp
             {
                 if (item.Name == "panel")
                 {
-                    System.Console.WriteLine("nope"); ;
+                    //System.Console.WriteLine("nope"); ;
                 }
                 else
                 {
@@ -80,8 +80,8 @@ namespace TouchMenuApp
                     buttons.button[i] = new Vec4(_positionX, _positionY, 0, 0);
                     buttonList.Add(new Vec4(_positionX, _positionY, 0, 0));
                     i++;
-                    //System.Console.WriteLine(item.Name + "  Original x pos: " + item.LocalTransform.Pose.position.x + "  Tweaked: " + _positionX);
-                    System.Console.WriteLine(item.Name);
+                    System.Console.WriteLine(item.Name + "  Original x pos: " + item.LocalTransform.Pose.position.x + "  Tweaked: " + _positionX);
+                    //System.Console.WriteLine(item.Name);
                 }
             }
 
@@ -99,10 +99,19 @@ namespace TouchMenuApp
             UI.Handle("Cube", ref cubePose, touchPanel.Bounds);
             touchPanel.Draw(cubePose.ToMatrix());
 
+            Hierarchy.Push(cubePose.ToMatrix());
             foreach (var item in touchPanel.Nodes)
             {
-                sphere.Draw(Matrix.TS(item.LocalTransform.Pose.position, 0.01f));
+                if (item.Name == "panel")
+                {
+                    //System.Console.WriteLine("nope"); ;
+                }
+                else
+                {
+                    sphere.Draw(Matrix.TS(item.LocalTransform.Pose.position, 0.01f));
+                }
             }
+            Hierarchy.Pop();
         }
 
         float FindLongestSide(Model model)
