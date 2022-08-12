@@ -74,6 +74,8 @@ namespace TouchMenuApp
                 }
                 else
                 {
+                    //float _positionX = (item.ModelTransform.Pose.position.x + (touchPanel.Bounds.dimensions.x / 2)) / longestSide;
+                    //float _positionY = (item.ModelTransform.Pose.position.z + (touchPanel.Bounds.dimensions.z / 2)) / longestSide;
                     float _positionX = (item.ModelTransform.Pose.position.x + (touchPanel.Bounds.dimensions.x / 2)) / longestSide;
                     float _positionY = (item.ModelTransform.Pose.position.z + (touchPanel.Bounds.dimensions.z / 2)) / longestSide;
 
