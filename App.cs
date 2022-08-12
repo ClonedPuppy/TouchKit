@@ -27,7 +27,7 @@ namespace TouchMenuApp
             displayPreference = DisplayMode.MixedReality
         };
 
-        Pose cubePose = new Pose(0, 0, 0, Quat.FromAngles(0, 180, 0));
+        Pose cubePose = new Pose(0, 0, -0.4f, Quat.FromAngles(-90, 180, 0));
         //Pose cubePose = new Pose(0, 0, 0, Quat.Identity);
         Model touchPanel;
         Model sphere;
@@ -41,11 +41,15 @@ namespace TouchMenuApp
         List<Vec4> buttonList = new List<Vec4>();
         List<Vec4> sliderList = new List<Vec4>();
 
+        PushButton pushButton;
+
         public void Init()
         {
             ButtonData buttons = new ButtonData();
 
             SliderData sliders = new SliderData();
+
+            pushButton = new PushButton();
 
             // Create assets used by the app
             sphere = new Model(Mesh.Sphere, Material.Default);
@@ -74,23 +78,24 @@ namespace TouchMenuApp
                 }
                 else
                 {
-                    //float _positionX = (item.ModelTransform.Pose.position.x + (touchPanel.Bounds.dimensions.x / 2)) / longestSide;
-                    //float _positionY = (item.ModelTransform.Pose.position.z + (touchPanel.Bounds.dimensions.z / 2)) / longestSide;
-                    float _positionX = (item.ModelTransform.Pose.position.x + (touchPanel.Bounds.dimensions.x / 2)) / longestSide;
-                    float _positionY = (item.ModelTransform.Pose.position.z + (touchPanel.Bounds.dimensions.z / 2)) / longestSide;
+                    float _positionX = (item.LocalTransform.Pose.position.x + (touchPanel.Bounds.dimensions.x / 2)) / longestSide;
+                    float _positionY = (item.LocalTransform.Pose.position.z + (touchPanel.Bounds.dimensions.z / 2)) / longestSide;
 
                     buttons.button[i] = new Vec4(_positionX, _positionY, 0, 0);
                     buttonList.Add(new Vec4(_positionX, _positionY, 0, 0));
                     i++;
-                    System.Console.WriteLine(item.Name + "  Original x pos: " + item.LocalTransform.Pose.position.x + "  Tweaked: " + _positionX);
-                    //System.Console.WriteLine(item.Name);
+                    //System.Console.WriteLine(item.Name + "  Original x pos: " + item.ModelTransform.Pose.position.x + "  Tweaked: " + _positionX);
+                    //System.Console.WriteLine(item.ModelTransform.Pose.position.z);
                 }
             }
 
             touchPanelMat.SetInt("buttonAmount", i);
             touchPanelMat.SetData<ButtonData>("button", buttons);
+            if (SK.ActiveDisplayMode == DisplayMode.Flatscreen)
+            {
+                //Renderer.CameraRoot = Matrix.TR(V.XYZ(0, 0.5f, 0.185f), Quat.FromAngles(-69, 0, 0));
+            }
 
-            Renderer.CameraRoot = Matrix.TR(V.XYZ(0, 0.5f, 0.185f), Quat.FromAngles(-69, 0, 0));
         }
 
         public void Step()
@@ -110,7 +115,8 @@ namespace TouchMenuApp
                 }
                 else
                 {
-                    sphere.Draw(Matrix.TS(item.LocalTransform.Pose.position, 0.01f));
+                    pushButton.Button(touchPanel, item.Name, false);
+                    sphere.Draw(Matrix.TS(item.ModelTransform.Pose.position, 0.01f));
                 }
             }
             Hierarchy.Pop();

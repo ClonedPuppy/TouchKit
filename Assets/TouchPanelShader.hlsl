@@ -157,7 +157,7 @@ float drawButton(FingerDistStruct fingerInfo, float2 uv, float4 pos, float2 size
 	return smoothstep(0.55, 0.45, abs(d / thickness) * 5.0) + smoothstep(0.66, 0.33, e / thickness * 5.0);
 }
 
-float drawButton1(FingerDistStruct fingerInfo, float2 uv, float4 pos, float2 size, float radius, float thickness)
+float drawButtonTEST(FingerDistStruct fingerInfo, float2 uv, float4 pos, float2 size, float radius, float thickness)
 {
 
 	float d = length(max(abs(uv - float2(pos.x, pos.y)), size) - size) - radius;
