@@ -74,6 +74,8 @@ namespace TouchMenuApp
                 }
                 else
                 {
+                    //float _positionX = (item.ModelTransform.Pose.position.x + (touchPanel.Bounds.dimensions.x / 2)) / longestSide;
+                    //float _positionY = (item.ModelTransform.Pose.position.z + (touchPanel.Bounds.dimensions.z / 2)) / longestSide;
                     float _positionX = (item.ModelTransform.Pose.position.x + (touchPanel.Bounds.dimensions.x / 2)) / longestSide;
                     float _positionY = (item.ModelTransform.Pose.position.z + (touchPanel.Bounds.dimensions.z / 2)) / longestSide;
 
@@ -101,7 +103,7 @@ namespace TouchMenuApp
 
             foreach (var item in touchPanel.Nodes)
             {
-                sphere.Draw(Matrix.TS(item.LocalTransform.Pose.position, 0.01f));
+                sphere.Draw(Matrix.TS(item.ModelTransform.Pose.position, 0.01f));
             }
         }
 
