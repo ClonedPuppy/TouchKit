@@ -116,7 +116,7 @@ namespace TouchMenuApp
                 else
                 {
                     pushButton.Button(touchPanel, item.Name, false);
-                    sphere.Draw(Matrix.TS(item.ModelTransform.Pose.position, 0.01f));
+                    //sphere.Draw(Matrix.TS(item.ModelTransform.Pose.position, 0.01f));
                 }
             }
             Hierarchy.Pop();
