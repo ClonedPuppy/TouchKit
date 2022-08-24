@@ -58,7 +58,7 @@ namespace TouchMenuApp
             floorMaterial.Transparency = Transparency.Blend;
 
             touchPanel = Model.FromFile("Panel_v001.glb");
-            touchPanelTex = Tex.FromFile("TouchMenuTexture.tga");
+            touchPanelTex = Tex.FromFile("TouchMenuTexture.png");
             touchPanelShader = Shader.FromFile("TouchPanelShader.hlsl");
             touchPanelMat = new Material(touchPanelShader);
             touchPanelMat[MatParamName.DiffuseTex] = touchPanelTex;
@@ -84,8 +84,8 @@ namespace TouchMenuApp
                     buttons.button[i] = new Vec4(_positionX, _positionY, 0, 0);
                     buttonList.Add(new Vec4(_positionX, _positionY, 0, 0));
                     i++;
-                    //System.Console.WriteLine(item.Name + "  Original x pos: " + item.ModelTransform.Pose.position.x + "  Tweaked: " + _positionX);
-                    //System.Console.WriteLine(item.ModelTransform.Pose.position.z);
+                    System.Console.WriteLine(item.Name + "  Original x pos: " + item.ModelTransform.Pose.position.x + "  Tweaked: " + _positionX);
+                    System.Console.WriteLine(item.ModelTransform.Pose.position.z);
                 }
             }
 

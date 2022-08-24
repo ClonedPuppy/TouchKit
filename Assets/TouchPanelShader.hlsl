@@ -288,7 +288,7 @@ float4 ps(psIn input) : SV_TARGET
 	
 	//glow1 += dot(fingerDistance.on_plane, float2(button[0].x, button[0].y));
 
-	float4 col = float4(lerp(input.color.rgb, float3(255, 255, 255), buttons.rrr), input.color.a);
+	float4 col = float4(lerp(color.rgb, float3(255, 255, 255), buttons.rrr), input.color.a);
 	
 	return float4(color + emissive, albedo.a) * col;
 }
