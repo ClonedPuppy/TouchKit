@@ -65,6 +65,7 @@ namespace TouchMenuApp
             touchPanelMat.Transparency = Transparency.Blend;
             touchPanel.Visuals[0].Material = touchPanelMat;
 
+
             float longestSide = FindLongestSide(touchPanel);
 
             buttons.button = new Vec4[20];
@@ -96,6 +97,8 @@ namespace TouchMenuApp
                 //Renderer.CameraRoot = Matrix.TR(V.XYZ(0, 0.5f, 0.185f), Quat.FromAngles(-69, 0, 0));
             }
 
+
+
         }
 
         public void Step()
@@ -120,6 +123,9 @@ namespace TouchMenuApp
                 }
             }
             Hierarchy.Pop();
+            System.Console.WriteLine(touchPanel.Visuals[0].GetInfo("prop"));
+
+
         }
 
         float FindLongestSide(Model model)
