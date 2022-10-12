@@ -13,6 +13,7 @@
   <ItemGroup>
     <None Remove="Assets\Panel_v001.glb" />
     <None Remove="Assets\sexyCircle.hlsl" />
+    <None Remove="Assets\simple.hlsl" />
     <None Remove="Assets\TouchMenuTexture.png" />
     <None Remove="Assets\TouchMenuTexture.tga" />
     <None Remove="Assets\TouchPanelShader.hlsl" />
@@ -30,6 +31,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <SKShader Include="Assets\simple.hlsl" />
     <SKShader Include="Assets\sexyCircle.hlsl" />
     <SKShader Include="Assets\floor.hlsl" />
     <SKShader Include="Assets\TouchPanelShader.hlsl">
@@ -43,6 +45,10 @@
 
   <ItemGroup>
     <UpToDateCheckInput Remove="Assets\sexyCircle.hlsl" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <UpToDateCheckInput Remove="Assets\simple.hlsl" />
   </ItemGroup>
 
 </Project>

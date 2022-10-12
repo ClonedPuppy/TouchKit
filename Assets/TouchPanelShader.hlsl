@@ -1,6 +1,6 @@
 #include "stereokit.hlsli"
 
-//--name = gameboard
+//--name = touchpanel
 //--color:color           = 1,1,1,1
 //--emission_factor:color = 0,0,0,0
 //--metallic              = 0
