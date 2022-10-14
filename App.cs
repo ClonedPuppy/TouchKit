@@ -24,7 +24,7 @@ namespace TouchMenuApp
         {
             appName = "TouchMenu",
             assetsFolder = "Assets",
-            displayPreference = DisplayMode.MixedReality
+            displayPreference = DisplayMode.Flatscreen
         };
 
         Pose cubePose = new Pose(0, 0, -0.4f, Quat.FromAngles(-90, 180, 0));
@@ -58,9 +58,10 @@ namespace TouchMenuApp
             floorMaterial.Transparency = Transparency.Blend;
 
             touchPanel = Model.FromFile("Panel_v001.glb");
-            touchPanelTex = Tex.FromFile("TouchMenuTexture.png");
+            touchPanelTex = Tex.FromFile("TouchMenuTexture.tga");
             touchPanelShader = Shader.FromFile("simple.hlsl");
             touchPanelMat = new Material(touchPanelShader);
+            touchPanelMat[MatParamName.DiffuseTex] = touchPanelTex;
             touchPanelMat[MatParamName.MetalTex] = touchPanelTex;
             touchPanelMat.Transparency = Transparency.Blend;
             touchPanel.Visuals[0].Material = touchPanelMat;

@@ -112,10 +112,9 @@ FingerDistStruct FingerDistInfo(float3 world_pos, float3 world_norm)
 		float3 on_plane = sk_fingertip[i].xyz + d * world_norm;
 
 		// Also make distances behind the plane negative
-		//float finger_dist = length(to_finger);
-		//if (abs(result.from_finger) > finger_dist)
-		//	//result.from_finger = 10000;
-		//	result.from_finger = finger_dist * sign(d);
+		float finger_dist = length(to_finger);
+		if (abs(result.from_finger) > finger_dist)
+			result.from_finger = finger_dist * sign(d);
 		
 		if (d <= 0)
 		{
@@ -139,7 +138,7 @@ float drawButton(FingerDistStruct fingerInfo, float2 uv, float4 pos, float2 size
 
 float4 ps(psIn input) : SV_TARGET
 {
-	float4 albedo = diffuse.Sample(diffuse_s, input.uv) * input.color;
+	float4 albedo = diffuse.Sample(diffuse_s, input.uv);
 	float3 emissive = emission.Sample(emission_s, input.uv).rgb * emission_factor.rgb;
 	float2 metal_rough = metal.Sample(metal_s, input.uv).gb; // rough is g, b is metallic
 	float ao = occlusion.Sample(occlusion_s, input.uv).r; // occlusion is sometimes part of the metal tex, uses r channel
@@ -158,7 +157,7 @@ float4 ps(psIn input) : SV_TARGET
 	
 	float4 surface = skpbr_shade(albedo, input.irradiance, ao, metallic_final, rough_final, input.view_dir, input.normal);
 	
-	float4 color = float4(lerp(surface.rgb, float3(255, 255, 255), buttons.rrr), input.color.a);
+	float4 color = float4(lerp(surface.rgb, float3(255, 255, 255), buttons.rrr), albedo.a);
 	
 	color.rgb += emissive;
 	
