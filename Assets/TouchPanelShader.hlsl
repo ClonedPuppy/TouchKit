@@ -141,8 +141,8 @@ FingerDistStruct FingerDistInfo(float3 world_pos, float3 world_norm)
 		{
 			result.on_plane = 1;
 		}
-			result.on_plane = min(result.on_plane, length(world_pos - on_plane));
-		}
+		result.on_plane = min(result.on_plane, length(world_pos - on_plane));
+	}
 
 	return result;
 }

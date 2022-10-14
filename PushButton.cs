@@ -57,7 +57,7 @@ namespace TouchMenuApp
                 interValTime = Time.Total + interval;
                 if (buttonStates[_nodeName] == true)
                 {
-                    System.Console.WriteLine(_nodeName.ToString() + " Pressed");
+                    //System.Console.WriteLine(_nodeName.ToString() + " Pressed");
                     //Assets.surfaceTopMat.SetFloat(_nodeName, 1);
                     //if (nodeName == "Play")
                     //{
