@@ -46,6 +46,10 @@ namespace TouchMenuApp
 
         public void Init()
         {
+            //sphereMesh = Mesh.GenerateSphere(1, 7);
+            Renderer.SkyTex = Tex.FromCubemapEquirectangular(@"HDRI-ND-34th_STREET_HM.jpg");
+            Renderer.SkyTex.OnLoaded += t => Renderer.SkyLight = t.CubemapLighting;
+            
             ButtonData buttons = new ButtonData();
 
             SliderData sliders = new SliderData();

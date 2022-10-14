@@ -350,3 +350,5 @@ MigrationBackup/
 .ionide/
 *.blend1
 /.vscode
+/Assets/HDRI-ND-34th_STREET_HM.exr
+/Assets/HDRI-ND-34th_STREET_HM.exr.xmp

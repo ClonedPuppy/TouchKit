@@ -2,9 +2,9 @@
 #include <stereokit_pbr.hlsli>
 
 //--name					= simple
-//--color:color				= 0, 0, 0, 1
+//--color:color				= 1, 1, 1, 1
 //--emission_factor:color	= 0,0,0,0
-//--metallic				= 0
+//--metallic				= 1
 //--roughness				= 1
 
 //--tex_scale				= 1
@@ -40,7 +40,6 @@ int	   buttonAmount;
 //--emission				= white
 //--metal					= white
 //--normal					= flat
-//--occlusion				= white
 
 Texture2D diffuse : register(t0);
 SamplerState diffuse_s : register(s0);
@@ -50,8 +49,6 @@ Texture2D metal : register(t2);
 SamplerState metal_s : register(s2);
 Texture2D normal : register(t3);
 SamplerState normal_s : register(s3);
-Texture2D occlusion : register(t4);
-SamplerState occlusion_s : register(s4);
 
 float4 button[20];
 
@@ -111,10 +108,10 @@ FingerDistStruct FingerDistInfo(float3 world_pos, float3 world_norm)
 		float d = dot(world_norm, to_finger);
 		float3 on_plane = sk_fingertip[i].xyz + d * world_norm;
 
-		// Also make distances behind the plane negative
-		float finger_dist = length(to_finger);
-		if (abs(result.from_finger) > finger_dist)
-			result.from_finger = finger_dist * sign(d);
+		//// Also make distances behind the plane negative
+		//float finger_dist = length(to_finger);
+		//if (abs(result.from_finger) > finger_dist)
+		//	result.from_finger = finger_dist * sign(d);
 		
 		if (d <= 0)
 		{
@@ -131,18 +128,17 @@ float drawButton(FingerDistStruct fingerInfo, float2 uv, float4 pos, float2 size
 
 	float d = length(max(abs(uv - float2(pos.x, pos.y)), size) - size) - radius;
 	float e = length(max(abs(uv - float2(pos.x, pos.y)), min(fingerInfo.on_plane.x, size) - 0.005) - (min(fingerInfo.on_plane.x, size) - 0.005)) - (radius - 0.005);
-	//float e = length(max(abs(uv - float2(pos.x, pos.y)), size - 0.005) - (size - 0.005)) - (radius - 0.005);
 	
 	return smoothstep(0.55, 0.45, abs(d / thickness) * 5.0) + smoothstep(0.66, 0.33, e / thickness * 5.0);
 }
 
 float4 ps(psIn input) : SV_TARGET
 {
-	float4 albedo = diffuse.Sample(diffuse_s, input.uv);
+	float4 albedo = diffuse.Sample(diffuse_s, input.uv) * input.color;
 	float3 emissive = emission.Sample(emission_s, input.uv).rgb * emission_factor.rgb;
 	float2 metal_rough = metal.Sample(metal_s, input.uv).gb; // rough is g, b is metallic
-	float ao = occlusion.Sample(occlusion_s, input.uv).r; // occlusion is sometimes part of the metal tex, uses r channel
-
+	float ao = metal.Sample(metal_s, input.uv).r; // occlusion is sometimes part of the metal tex, uses r channel
+	
 	float metallic_final = metal_rough.y * metallic;
 	float rough_final = metal_rough.x * roughness;
 	
@@ -155,9 +151,9 @@ float4 ps(psIn input) : SV_TARGET
 		buttons += drawButton(fingerDistance, input.uv, button[i], 0.03, 0.01, 0.025);
 	}
 	
-	float4 surface = skpbr_shade(albedo, input.irradiance, ao, metallic_final, rough_final, input.view_dir, input.normal);
+	albedo = float4(lerp(albedo.rgb, float3(1, 1, 1), buttons.rrr), albedo.a);
 	
-	float4 color = float4(lerp(surface.rgb, float3(255, 255, 255), buttons.rrr), albedo.a);
+	float4 color = skpbr_shade(albedo, input.irradiance, ao, metallic_final, rough_final, input.view_dir, input.normal);
 	
 	color.rgb += emissive;
 	
