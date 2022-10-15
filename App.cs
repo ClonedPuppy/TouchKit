@@ -28,9 +28,7 @@ namespace TouchMenuApp
         };
 
         Pose cubePose = new Pose(0, 0, -0.4f, Quat.FromAngles(-90, 180, 0));
-        //Pose cubePose = new Pose(0, 0, 0, Quat.Identity);
         Model touchPanel;
-        Model sphere;
 
         Matrix floorTransform = Matrix.TS(new Vec3(0, -1.5f, 0), new Vec3(30, 0.1f, 30));
         Tex touchPanelDiff;
@@ -47,9 +45,12 @@ namespace TouchMenuApp
         public void Init()
         {
             //sphereMesh = Mesh.GenerateSphere(1, 7);
-            Renderer.SkyTex = Tex.FromCubemapEquirectangular(@"HDRI-ND-34th_STREET_HM.jpg");
-            Renderer.SkyTex.OnLoaded += t => Renderer.SkyLight = t.CubemapLighting;
-            
+            //Renderer.SkyTex = Tex.FromCubemapEquirectangular(@"HDRI-ND-34th_STREET_HM.jpg");
+            //Renderer.SkyTex.OnLoaded += t => Renderer.SkyLight = t.CubemapLighting;
+
+            Renderer.SkyTex = Tex.FromCubemapEquirectangular("old_depot.hdr", out SphericalHarmonics lighting);
+            Renderer.SkyLight = lighting;
+
             ButtonData buttons = new ButtonData();
 
             SliderData sliders = new SliderData();
@@ -57,8 +58,6 @@ namespace TouchMenuApp
             pushButton = new PushButton();
 
             // Create assets used by the app
-            sphere = new Model(Mesh.Sphere, Material.Default);
-
             floorMaterial = new Material(Shader.FromFile("floor.hlsl"));
             floorMaterial.Transparency = Transparency.Blend;
 

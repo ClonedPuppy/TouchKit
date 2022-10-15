@@ -2,36 +2,25 @@
 #include <stereokit_pbr.hlsli>
 
 //--name					= simple
+
 //--color:color				= 1, 1, 1, 1
 //--emission_factor:color	= 0,0,0,0
 //--metallic				= 1
 //--roughness				= 1
+float4 color;
+float4 emission_factor;
+float metallic;
+float roughness;
 
 //--tex_scale				= 1
 //--uvXoffset				= 0
 //--uvYoffset				= 0
-//--diffuse					= white
-//--glowAmount				= 0.1
-//--minValue				= 0
-//--maxValue				= 0.5
-//--xAmount					= 0
-//--yAmount					= 0
-//--uScale					= 1;
-//--vScale					= 1;
-//--buttonAmount			= 1;
-
-float4 color;
-float4 emission_factor;
-float  metallic;
-float  roughness;
+//--uScale					= 1
+//--vScale					= 1
+//--buttonAmount			= 1
 float  tex_scale;
 float  uvXoffset;
 float  uvYoffset;
-float  glowAmount;
-float  minValue;
-float  maxValue;
-float  xAmount;
-float  yAmount;
 float  uScale;
 float  vScale;
 int	   buttonAmount;
@@ -40,7 +29,6 @@ int	   buttonAmount;
 //--emission				= white
 //--metal					= white
 //--normal					= flat
-
 Texture2D diffuse : register(t0);
 SamplerState diffuse_s : register(s0);
 Texture2D emission : register(t1);
@@ -51,13 +39,12 @@ Texture2D normal : register(t3);
 SamplerState normal_s : register(s3);
 
 float4 button[20];
-
 float4 slider[20];
 
 struct vsIn
 {
 	float4 pos			: SV_Position;
-	float3 normal		: NORMAL0;
+	float3 norm			: NORMAL0;
 	float2 uv			: TEXCOORD0;
 	float4 color		: COLOR0;
 };
@@ -82,7 +69,7 @@ psIn vs(vsIn input, uint id : SV_InstanceID)
 	o.world = mul(float4(input.pos.xyz, 1), sk_inst[id].world).xyz;
 	o.pos = mul(float4(o.world, 1), sk_viewproj[o.view_id]);
 
-	o.normal = normalize(mul(float4(input.normal, 0), sk_inst[id].world).xyz);
+	o.normal = normalize(mul(float4(input.norm, 0), sk_inst[id].world).xyz);
 	o.uv = (input.uv + float2(-uvXoffset, -uvYoffset)) * float2(uScale, vScale) * tex_scale;
 	o.color = input.color * sk_inst[id].color * color;
 	o.irradiance = Lighting(o.normal);
@@ -90,15 +77,15 @@ psIn vs(vsIn input, uint id : SV_InstanceID)
 	return o;
 }
 
-struct FingerDistStruct
+struct FingerDist2
 {
 	float from_finger;
 	float on_plane;
 };
 
-FingerDistStruct FingerDistInfo(float3 world_pos, float3 world_norm)
+FingerDist2 FingerDistanceInfo2(float3 world_pos, float3 world_norm)
 {
-	FingerDistStruct result;
+	FingerDist2 result;
 	result.from_finger = 10000;
 	result.on_plane = 10000;
 	
@@ -107,11 +94,6 @@ FingerDistStruct FingerDistInfo(float3 world_pos, float3 world_norm)
 		float3 to_finger = sk_fingertip[i].xyz - world_pos;
 		float d = dot(world_norm, to_finger);
 		float3 on_plane = sk_fingertip[i].xyz + d * world_norm;
-
-		//// Also make distances behind the plane negative
-		//float finger_dist = length(to_finger);
-		//if (abs(result.from_finger) > finger_dist)
-		//	result.from_finger = finger_dist * sign(d);
 		
 		if (d <= 0)
 		{
@@ -123,7 +105,7 @@ FingerDistStruct FingerDistInfo(float3 world_pos, float3 world_norm)
 	return result;
 }
 
-float drawButton(FingerDistStruct fingerInfo, float2 uv, float4 pos, float2 size, float radius, float thickness)
+float drawButton(FingerDist2 fingerInfo, float2 uv, float4 pos, float2 size, float radius, float thickness)
 {
 
 	float d = length(max(abs(uv - float2(pos.x, pos.y)), size) - size) - radius;
@@ -142,13 +124,13 @@ float4 ps(psIn input) : SV_TARGET
 	float metallic_final = metal_rough.y * metallic;
 	float rough_final = metal_rough.x * roughness;
 	
-	FingerDistStruct fingerDistance = FingerDistInfo(input.world.xyz, input.normal);
+	FingerDist2 fingerDistance = FingerDistanceInfo2(input.world.xyz, input.normal);
 	
 	float buttons = 0;
 	
 	for (uint i = 0; i < buttonAmount; i++)
 	{
-		buttons += drawButton(fingerDistance, input.uv, button[i], 0.03, 0.01, 0.025);
+		buttons += drawButton(fingerDistance, input.uv, button[i], 0.03, 0.005, 0.025);
 	}
 	
 	albedo = float4(lerp(albedo.rgb, float3(1, 1, 1), buttons.rrr), albedo.a);

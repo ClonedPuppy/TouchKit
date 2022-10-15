@@ -12,6 +12,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Remove="Assets\HDRI-ND-34th_STREET_HM.jpg" />
+    <None Remove="Assets\old_depot.hdr" />
     <None Remove="Assets\Panel_v001.glb" />
     <None Remove="Assets\sexyCircle.hlsl" />
     <None Remove="Assets\simple.hlsl" />
@@ -23,6 +24,9 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="Assets\HDRI-ND-34th_STREET_HM.jpg">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Assets\old_depot.hdr">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="Assets\Panel_v001.glb">
