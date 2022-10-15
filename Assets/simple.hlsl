@@ -18,12 +18,12 @@ float roughness;
 //--uScale					= 1
 //--vScale					= 1
 //--buttonAmount			= 1
-float  tex_scale;
-float  uvXoffset;
-float  uvYoffset;
-float  uScale;
-float  vScale;
-int	   buttonAmount;
+float tex_scale;
+float uvXoffset;
+float uvYoffset;
+float uScale;
+float vScale;
+int buttonAmount;
 
 //--diffuse					= white
 //--emission				= white
@@ -43,21 +43,21 @@ float4 slider[20];
 
 struct vsIn
 {
-	float4 pos			: SV_Position;
-	float3 norm			: NORMAL0;
-	float2 uv			: TEXCOORD0;
-	float4 color		: COLOR0;
+	float4 pos : SV_Position;
+	float3 norm : NORMAL0;
+	float2 uv : TEXCOORD0;
+	float4 color : COLOR0;
 };
 struct psIn
 {
-	float4 pos			: SV_POSITION;
-	float3 normal		: NORMAL0;
-	float2 uv			: TEXCOORD0;
-	float4 color		: COLOR0;
-	float3 irradiance	: COLOR1;
-	float3 world		: TEXCOORD1;
-	float3 view_dir		: TEXCOORD2;
-	uint view_id		: SV_RenderTargetArrayIndex;
+	float4 pos : SV_POSITION;
+	float3 normal : NORMAL0;
+	float2 uv : TEXCOORD0;
+	float4 color : COLOR0;
+	float3 irradiance : COLOR1;
+	float3 world : TEXCOORD1;
+	float3 view_dir : TEXCOORD2;
+	uint view_id : SV_RenderTargetArrayIndex;
 };
 
 psIn vs(vsIn input, uint id : SV_InstanceID)
@@ -121,23 +121,31 @@ float4 ps(psIn input) : SV_TARGET
 	float2 metal_rough = metal.Sample(metal_s, input.uv).gb; // rough is g, b is metallic
 	float ao = metal.Sample(metal_s, input.uv).r; // occlusion is sometimes part of the metal tex, uses r channel
 	
-	float metallic_final = metal_rough.y * metallic;
-	float rough_final = metal_rough.x * roughness;
+
 	
 	FingerDist2 fingerDistance = FingerDistanceInfo2(input.world.xyz, input.normal);
 	
 	float buttons = 0;
+	float buttonsM = 0;
+	float buttonsR = 0;
 	
 	for (uint i = 0; i < buttonAmount; i++)
 	{
 		buttons += drawButton(fingerDistance, input.uv, button[i], 0.03, 0.005, 0.025);
+		buttonsM += buttons.r * button[i].z;
+		buttonsR += buttons.r * button[i].w;
 	}
 	
-	albedo = float4(lerp(albedo.rgb, float3(1, 1, 1), buttons.rrr), albedo.a);
+	float metallic_final = clamp(metal_rough.y * metallic + buttonsM, 0, 1);
+	float rough_final = clamp(metal_rough.x * roughness + buttonsR, 0, 1);
+	
+	//albedo = float4(lerp(albedo.rgb, float3(1, 1, 1), buttons.rrr), albedo.a);
+	
+	albedo = float4(albedo.rgb + buttons.rrr, albedo.a);
 	
 	float4 color = skpbr_shade(albedo, input.irradiance, ao, metallic_final, rough_final, input.view_dir, input.normal);
 	
 	color.rgb += emissive;
 	
-	return color;
+	return buttonsR.rrrr;
 }

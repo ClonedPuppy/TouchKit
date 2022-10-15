@@ -1,5 +1,6 @@
 ﻿using StereoKit;
 using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.InteropServices;
 
 namespace TouchMenuApp
@@ -44,12 +45,12 @@ namespace TouchMenuApp
 
         public void Init()
         {
-            //sphereMesh = Mesh.GenerateSphere(1, 7);
             //Renderer.SkyTex = Tex.FromCubemapEquirectangular(@"HDRI-ND-34th_STREET_HM.jpg");
             //Renderer.SkyTex.OnLoaded += t => Renderer.SkyLight = t.CubemapLighting;
 
             Renderer.SkyTex = Tex.FromCubemapEquirectangular("old_depot.hdr", out SphericalHarmonics lighting);
             Renderer.SkyLight = lighting;
+            Renderer.EnableSky = true;
 
             ButtonData buttons = new ButtonData();
 
@@ -88,11 +89,25 @@ namespace TouchMenuApp
                     float _positionX = (item.LocalTransform.Pose.position.x + (touchPanel.Bounds.dimensions.x / 2)) / longestSide;
                     float _positionY = (item.LocalTransform.Pose.position.z + (touchPanel.Bounds.dimensions.z / 2)) / longestSide;
 
-                    buttons.button[i] = new Vec4(_positionX, _positionY, 0, 0);
-                    buttonList.Add(new Vec4(_positionX, _positionY, 0, 0));
+                    float metallic = 0;
+                    float roughness = 0;
+                    if (item.Info.Count > 0)
+                    {
+                        if (item.Info.Contains("metallic"))
+                        {
+                            metallic = float.Parse(item.Info["metallic"]);
+                            System.Console.WriteLine(metallic.ToString());
+                        }
+                        if (item.Info.Contains("roughness"))
+                        {
+                            roughness = float.Parse(item.Info["roughness"]);
+                            System.Console.WriteLine(roughness.ToString());
+                        }
+                    }
+
+                    buttons.button[i] = new Vec4(_positionX, _positionY, metallic, roughness);
+                    buttonList.Add(new Vec4(_positionX, _positionY, metallic, roughness));
                     i++;
-                    //System.Console.WriteLine(item.Name + "  Original x pos: " + item.ModelTransform.Pose.position.x + "  Tweaked: " + _positionX);
-                    //System.Console.WriteLine(item.ModelTransform.Pose.position.z);
                 }
             }
 
