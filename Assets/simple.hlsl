@@ -147,5 +147,5 @@ float4 ps(psIn input) : SV_TARGET
 	
 	color.rgb += emissive;
 	
-	return buttonsR.rrrr;
+	return color;
 }
