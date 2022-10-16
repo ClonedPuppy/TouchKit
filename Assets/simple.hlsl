@@ -105,13 +105,15 @@ FingerDist2 FingerDistanceInfo2(float3 world_pos, float3 world_norm)
 	return result;
 }
 
-float drawButton(FingerDist2 fingerInfo, float2 uv, float4 pos, float2 size, float radius, float thickness)
+float3 drawButton(FingerDist2 fingerInfo, float2 uv, float4 pos, float2 size, float radius, float thickness)
 {
 
 	float d = length(max(abs(uv - float2(pos.x, pos.y)), size) - size) - radius;
 	float e = length(max(abs(uv - float2(pos.x, pos.y)), min(fingerInfo.on_plane.x, size) - 0.005) - (min(fingerInfo.on_plane.x, size) - 0.005)) - (radius - 0.005);
 	
-	return smoothstep(0.55, 0.45, abs(d / thickness) * 5.0) + smoothstep(0.66, 0.33, e / thickness * 5.0);
+	float result = smoothstep(0.55, 0.45, abs(d / thickness) * 5.0) + smoothstep(0.66, 0.33, e / thickness * 5.0);
+	
+	return float3(result, result * pos.w, result * pos.z);
 }
 
 float4 ps(psIn input) : SV_TARGET
@@ -125,19 +127,15 @@ float4 ps(psIn input) : SV_TARGET
 	
 	FingerDist2 fingerDistance = FingerDistanceInfo2(input.world.xyz, input.normal);
 	
-	float buttons = 0;
-	float buttonsM = 0;
-	float buttonsR = 0;
+	float3 buttons = float3(0, 0, 0);
 	
 	for (uint i = 0; i < buttonAmount; i++)
 	{
 		buttons += drawButton(fingerDistance, input.uv, button[i], 0.03, 0.005, 0.025);
-		buttonsM += buttons.r * button[i].z;
-		buttonsR += buttons.r * button[i].w;
 	}
 	
-	float metallic_final = clamp(metal_rough.y * metallic + buttonsM, 0, 1);
-	float rough_final = clamp(metal_rough.x * roughness + buttonsR, 0, 1);
+	float metallic_final = clamp(metal_rough.y * (metallic * buttons.b), 0, 1); //
+	float rough_final = clamp(metal_rough.x * (roughness * buttons.g), 0, 1); // 
 	
 	//albedo = float4(lerp(albedo.rgb, float3(1, 1, 1), buttons.rrr), albedo.a);
 	
