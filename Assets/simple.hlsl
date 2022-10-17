@@ -118,6 +118,16 @@ float3 drawButton(FingerDist2 fingerInfo, float2 uv, float4 pos, float2 size, fl
 	return float3(result, result * pos.w, result * pos.z);
 }
 
+float3 drawSlider(FingerDist2 fingerInfo, float2 uv, float4 pos, float2 size, float radius, float thickness)
+{
+	float d = length(max(abs(uv - float2(pos.x, pos.y)), size) - size) - radius;
+	//float e = length(max(abs(uv - float2(pos.x, pos.y)), min(fingerInfo.on_plane.x, size) - 0.005) - (min(fingerInfo.on_plane.x, size) - 0.005)) - (radius - 0.005);
+	
+	float result = smoothstep(0.55, 0.45, abs(d / thickness) * 5.0);// + smoothstep(0.66, 0.33, e / thickness * 5.0);
+	
+	return float3(result, result * pos.w, result * pos.z);
+}
+
 float4 ps(psIn input) : SV_TARGET
 {
 	float4 albedo = diffuse.Sample(diffuse_s, input.uv) * input.color;
@@ -137,7 +147,7 @@ float4 ps(psIn input) : SV_TARGET
 	
 	for (uint i = 0; i < sliderAmount; i++)
 	{
-		sliders += drawButton(fingerDistance, input.uv, slider[i], 0.03, 0.005, 0.025);
+		sliders += drawSlider(fingerDistance, input.uv, slider[i], 0.03, 0.005, 0.025);
 	}
 	
 	float metallic_final = lerp(metal_rough.y * metallic, buttons.b + sliders.b, buttons.r + sliders.r);
