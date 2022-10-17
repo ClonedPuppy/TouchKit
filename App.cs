@@ -45,11 +45,8 @@ namespace TouchMenuApp
 
         public void Init()
         {
-            //Renderer.SkyTex = Tex.FromCubemapEquirectangular(@"HDRI-ND-34th_STREET_HM.jpg");
-            //Renderer.SkyTex.OnLoaded += t => Renderer.SkyLight = t.CubemapLighting;
-
-            Renderer.SkyTex = Tex.FromCubemapEquirectangular("old_depot.hdr", out SphericalHarmonics lighting);
-            Renderer.SkyLight = lighting;
+            Renderer.SkyTex = Tex.FromCubemapEquirectangular(@"Container_Env.hdr");
+            Renderer.SkyTex.OnLoaded += t => Renderer.SkyLight = t.CubemapLighting;
             Renderer.EnableSky = true;
 
             ButtonData buttons = new ButtonData();
@@ -58,7 +55,6 @@ namespace TouchMenuApp
 
             pushButton = new PushButton();
 
-            // Create assets used by the app
             floorMaterial = new Material(Shader.FromFile("floor.hlsl"));
             floorMaterial.Transparency = Transparency.Blend;
 
