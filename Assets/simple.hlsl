@@ -134,8 +134,8 @@ float4 ps(psIn input) : SV_TARGET
 		buttons += drawButton(fingerDistance, input.uv, button[i], 0.03, 0.005, 0.025);
 	}
 	
-	float metallic_final = clamp(metal_rough.y * (metallic * buttons.b), 0, 1); //
-	float rough_final = clamp(metal_rough.x * (roughness * buttons.g), 0, 1); // 
+	float metallic_final = lerp(metal_rough.y * metallic, buttons.b, buttons.r);
+	float rough_final = lerp(metal_rough.x * roughness, buttons.g, buttons.r);
 	
 	//albedo = float4(lerp(albedo.rgb, float3(1, 1, 1), buttons.rrr), albedo.a);
 	
