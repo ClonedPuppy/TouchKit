@@ -18,12 +18,14 @@ float roughness;
 //--uScale					= 1
 //--vScale					= 1
 //--buttonAmount			= 1
+//--sliderAmount			= 1
 float tex_scale;
 float uvXoffset;
 float uvYoffset;
 float uScale;
 float vScale;
 int buttonAmount;
+int sliderAmount;
 
 //--diffuse					= white
 //--emission				= white
@@ -123,23 +125,27 @@ float4 ps(psIn input) : SV_TARGET
 	float2 metal_rough = metal.Sample(metal_s, input.uv).gb; // rough is g, b is metallic
 	float ao = metal.Sample(metal_s, input.uv).r; // occlusion is sometimes part of the metal tex, uses r channel
 	
-
-	
 	FingerDist2 fingerDistance = FingerDistanceInfo2(input.world.xyz, input.normal);
 	
 	float3 buttons = float3(0, 0, 0);
+	float3 sliders = float3(0, 0, 0);
 	
 	for (uint i = 0; i < buttonAmount; i++)
 	{
 		buttons += drawButton(fingerDistance, input.uv, button[i], 0.03, 0.005, 0.025);
 	}
 	
-	float metallic_final = lerp(metal_rough.y * metallic, buttons.b, buttons.r);
-	float rough_final = lerp(metal_rough.x * roughness, buttons.g, buttons.r);
+	for (uint i = 0; i < sliderAmount; i++)
+	{
+		sliders += drawButton(fingerDistance, input.uv, slider[i], 0.03, 0.005, 0.025);
+	}
+	
+	float metallic_final = lerp(metal_rough.y * metallic, buttons.b + sliders.b, buttons.r + sliders.r);
+	float rough_final = lerp(metal_rough.x * roughness, buttons.g + sliders.g, buttons.r + sliders.r);
 	
 	//albedo = float4(lerp(albedo.rgb, float3(1, 1, 1), buttons.rrr), albedo.a);
 	
-	albedo = float4(albedo.rgb + buttons.rrr, albedo.a);
+	albedo = float4(albedo.rgb + buttons.rrr + sliders.rrr, albedo.a);
 	
 	float4 color = skpbr_shade(albedo, input.irradiance, ao, metallic_final, rough_final, input.view_dir, input.normal);
 	

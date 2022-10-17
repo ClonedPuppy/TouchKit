@@ -68,19 +68,23 @@ namespace TouchMenuApp
             touchPanelMat.Transparency = Transparency.Blend;
             touchPanel.Visuals[0].Material = touchPanelMat;
 
-
+            // Is the panel landscape or portrait?
             float longestSide = FindLongestSide(touchPanel);
 
             buttons.button = new Vec4[20];
+            sliders.slider = new Vec4[20];
 
             var i = 0;
+            var j = 0;
+            
+            // Parse out buttons and sliders in the gltf file
             foreach (var item in touchPanel.Nodes)
             {
                 if (item.Name == "panel")
                 {
                     //System.Console.WriteLine("nope"); ;
                 }
-                else
+                else if (item.Name.Contains("Button"))
                 {
                     float _positionX = (item.LocalTransform.Pose.position.x + (touchPanel.Bounds.dimensions.x / 2)) / longestSide;
                     float _positionY = (item.LocalTransform.Pose.position.z + (touchPanel.Bounds.dimensions.z / 2)) / longestSide;
@@ -105,17 +109,43 @@ namespace TouchMenuApp
                     buttonList.Add(new Vec4(_positionX, _positionY, metallic, roughness));
                     i++;
                 }
+                else if (item.Name.Contains("Slider"))
+                {
+                    float _positionX = (item.LocalTransform.Pose.position.x + (touchPanel.Bounds.dimensions.x / 2)) / longestSide;
+                    float _positionY = (item.LocalTransform.Pose.position.z + (touchPanel.Bounds.dimensions.z / 2)) / longestSide;
+
+                    float metallic = 0;
+                    float roughness = 0;
+                    if (item.Info.Count > 0)
+                    {
+                        if (item.Info.Contains("metallic"))
+                        {
+                            metallic = float.Parse(item.Info["metallic"]);
+                            System.Console.WriteLine(metallic.ToString());
+                        }
+                        if (item.Info.Contains("roughness"))
+                        {
+                            roughness = float.Parse(item.Info["roughness"]);
+                            System.Console.WriteLine(roughness.ToString());
+                        }
+                    }
+
+                    sliders.slider[j] = new Vec4(_positionX, _positionY, metallic, roughness);
+                    sliderList.Add(new Vec4(_positionX, _positionY, metallic, roughness));
+                    j++;
+                }
             }
 
+            // Send the data to the shader
             touchPanelMat.SetInt("buttonAmount", i);
+            touchPanelMat.SetInt("sliderAmount", j);
             touchPanelMat.SetData<ButtonData>("button", buttons);
+            touchPanelMat.SetData<SliderData>("slider", sliders);
+
             if (SK.ActiveDisplayMode == DisplayMode.Flatscreen)
             {
                 //Renderer.CameraRoot = Matrix.TR(V.XYZ(0, 0.5f, 0.185f), Quat.FromAngles(-69, 0, 0));
             }
-
-
-
         }
 
         public void Step()

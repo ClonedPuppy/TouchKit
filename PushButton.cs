@@ -83,5 +83,61 @@ namespace TouchMenuApp
                 interValTime += interval;
             }
         }
+
+        public void Slider(Model _model, string _nodeName, bool _sticky)
+        {
+            if (!buttonStates.ContainsKey(_nodeName))
+            {
+                buttonStates.Add(_nodeName, false);
+            }
+
+            node = _model.FindNode(_nodeName).ModelTransform.Pose;
+
+            //UI.ShowVolumes = true;
+            UI.PushSurface(node);
+            UI.WindowBegin(_nodeName + "Win", ref PoseNeutral, UIWin.Empty);
+            UI.ButtonBehavior(
+                button.Bounds.dimensions.XZ.XY0 / 2,
+                button.Bounds.dimensions.XZ,
+                _nodeName,
+                out float finger,
+                out BtnState state,
+                out BtnState focus);
+            UI.WindowEnd();
+            UI.PopSurface();
+            //UI.ShowVolumes = false;
+
+            if ((state & BtnState.JustActive) > 0)
+            {
+                buttonStates[_nodeName] = buttonStates[_nodeName] == true ? false : true;
+                interValTime = Time.Total + interval;
+                if (buttonStates[_nodeName] == true)
+                {
+                    //System.Console.WriteLine(_nodeName.ToString() + " Pressed");
+                    //Assets.surfaceTopMat.SetFloat(_nodeName, 1);
+                    //if (nodeName == "Play")
+                    //{
+                    //    buttonStates["Stop"] = false;
+                    //    Assets.surfaceTopMat.SetFloat("Stop", 0);
+                    //}
+                    //else
+                    //{
+                    //    buttonStates["Play"] = false;
+                    //    Assets.surfaceTopMat.SetFloat("Play", 0);
+                    //}
+                }
+                else
+                {
+                    //Assets.surfaceTopMat.SetFloat(_nodeName, 0);
+                }
+            }
+
+            if (!_sticky & buttonStates[_nodeName] == true & Time.Total > interValTime)
+            {
+                buttonStates[_nodeName] = false;
+                //Assets.surfaceTopMat.SetFloat(_nodeName, 0);
+                interValTime += interval;
+            }
+        }
     }
 }
