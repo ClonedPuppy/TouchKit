@@ -36,7 +36,7 @@ namespace TouchMenuApp
         Tex touchPanelMRAO;
         Shader touchPanelShader;
         Material floorMaterial;
-        Material touchPanelMat;
+        public static Material touchPanelMat;
 
         List<Vec4> buttonList = new List<Vec4>();
         List<Vec4> sliderList = new List<Vec4>();
@@ -80,11 +80,7 @@ namespace TouchMenuApp
             // Parse out buttons and sliders in the gltf file
             foreach (var item in touchPanel.Nodes)
             {
-                if (item.Name == "panel")
-                {
-                    //System.Console.WriteLine("nope"); ;
-                }
-                else if (item.Name.Contains("Button"))
+                if (item.Name.Contains("Button"))
                 {
                     float _positionX = (item.LocalTransform.Pose.position.x + (touchPanel.Bounds.dimensions.x / 2)) / longestSide;
                     float _positionY = (item.LocalTransform.Pose.position.z + (touchPanel.Bounds.dimensions.z / 2)) / longestSide;
@@ -96,12 +92,10 @@ namespace TouchMenuApp
                         if (item.Info.Contains("metallic"))
                         {
                             metallic = float.Parse(item.Info["metallic"]);
-                            System.Console.WriteLine(metallic.ToString());
                         }
                         if (item.Info.Contains("roughness"))
                         {
                             roughness = float.Parse(item.Info["roughness"]);
-                            System.Console.WriteLine(roughness.ToString());
                         }
                     }
 
@@ -121,12 +115,10 @@ namespace TouchMenuApp
                         if (item.Info.Contains("metallic"))
                         {
                             metallic = float.Parse(item.Info["metallic"]);
-                            System.Console.WriteLine(metallic.ToString());
                         }
                         if (item.Info.Contains("roughness"))
                         {
                             roughness = float.Parse(item.Info["roughness"]);
-                            System.Console.WriteLine(roughness.ToString());
                         }
                     }
 
@@ -159,20 +151,20 @@ namespace TouchMenuApp
             Hierarchy.Push(cubePose.ToMatrix());
             foreach (var item in touchPanel.Nodes)
             {
-                if (item.Name == "panel")
+                if (item.Name.Contains("panel"))
                 {
                     //System.Console.WriteLine("nope"); ;
                 }
-                else
+                else if (item.Name.Contains("Button"))
                 {
                     pushButton.Button(touchPanel, item.Name, false);
-                    //sphere.Draw(Matrix.TS(item.ModelTransform.Pose.position, 0.01f));
+                }
+                else if (item.Name.Contains("Slider"))
+                {
+                    pushButton.Slider(touchPanel, item.Name, false);
                 }
             }
             Hierarchy.Pop();
-            //System.Console.WriteLine(touchPanel.Visuals[0].GetInfo("prop"));
-
-
         }
 
         float FindLongestSide(Model model)
