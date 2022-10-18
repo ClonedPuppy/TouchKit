@@ -94,19 +94,20 @@ namespace TouchMenuApp
 
             node = _model.FindNode(_nodeName).ModelTransform.Pose;
 
-            UI.ShowVolumes = true;
+            //UI.ShowVolumes = true;
             UI.PushSurface(node);
             Vec3 volumeAt = new Vec3(0, 0, 0);
             Vec3 volumeSize = new Vec3(0.065f, 0.02f, 0.02f);
-            //Default.MeshCube.Draw(Default.Material, Matrix.TS(volumeAt, volumeSize));
-            UI.ShowVolumes = false;
-
+            
             BtnState volumeState = UI.VolumeAt("Volume", new Bounds(volumeAt, volumeSize), UIConfirm.Push, out Handed hand);
             if (volumeState != BtnState.Inactive)
             {
-                App.touchPanelMat.SetFloat("sliderRange", Math.Clamp(Remap(Input.Hand(hand)[FingerId.Index, JointId.Tip].Pose.position.x, 0, 0.13f, 0.2f, 0), 0, 02f));
+                Lines.AddAxis(Input.Hand(hand)[FingerId.Index, JointId.Tip].Pose, 0.05f);
+                App.touchPanelMat.SetFloat("sliderRange", Math.Clamp(Remap(Hierarchy.ToLocal(Input.Hand(hand)[FingerId.Index, JointId.Tip].Pose).position.x, -0.04f, 0.03f, 0.12f, 0.001f), 0, 02f));
+                Console.WriteLine(Hierarchy.ToLocal(Input.Hand(hand)[FingerId.Index, JointId.Tip].Pose).position.x);
             }
             UI.PopSurface();
+            //UI.ShowVolumes = false;
         }
 
         float Remap(float from, float fromMin, float fromMax, float toMin, float toMax)

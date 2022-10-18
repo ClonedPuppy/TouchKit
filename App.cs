@@ -61,7 +61,7 @@ namespace TouchMenuApp
             touchPanel = Model.FromFile("Panel_v001.glb");
             touchPanelDiff = Tex.FromFile("TouchMenuDiffuse.png");
             touchPanelMRAO = Tex.FromFile("TouchMenuMRAO.png");
-            touchPanelShader = Shader.FromFile("simple.hlsl");
+            touchPanelShader = Shader.FromFile("TouchPanelShader.hlsl");
             touchPanelMat = new Material(touchPanelShader);
             touchPanelMat[MatParamName.DiffuseTex] = touchPanelDiff;
             touchPanelMat[MatParamName.MetalTex] = touchPanelMRAO;

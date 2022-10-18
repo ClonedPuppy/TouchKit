@@ -14,12 +14,8 @@
     <None Remove="Assets\Container_Env.hdr" />
     <None Remove="Assets\night_free_Env.hdr" />
     <None Remove="Assets\Panel_v001.glb" />
-    <None Remove="Assets\sexyCircle.hlsl" />
-    <None Remove="Assets\simple.hlsl" />
     <None Remove="Assets\TouchMenuDiffuse.png" />
     <None Remove="Assets\TouchMenuMRAO.png" />
-    <None Remove="Assets\TouchMenuTexture.png" />
-    <None Remove="Assets\TouchMenuTexture.tga" />
     <None Remove="Assets\TouchPanelShader.hlsl" />
   </ItemGroup>
   <ItemGroup>
@@ -35,21 +31,11 @@
     <Content Include="Assets\TouchMenuMRAO.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="Assets\TouchMenuTexture.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Assets\TouchMenuTexture.tga">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
   </ItemGroup>
 
   <ItemGroup>
-    <SKShader Include="Assets\simple.hlsl" />
-    <SKShader Include="Assets\sexyCircle.hlsl" />
+    <SKShader Include="Assets\TouchPanelShader.hlsl" />
     <SKShader Include="Assets\floor.hlsl" />
-    <SKShader Include="Assets\TouchPanelShader.hlsl">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </SKShader>
   </ItemGroup>
 
   <ItemGroup>
@@ -57,11 +43,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <UpToDateCheckInput Remove="Assets\sexyCircle.hlsl" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <UpToDateCheckInput Remove="Assets\simple.hlsl" />
+    <UpToDateCheckInput Remove="Assets\TouchPanelShader.hlsl" />
   </ItemGroup>
 
 </Project>
