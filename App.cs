@@ -1,6 +1,6 @@
 ﻿using StereoKit;
 using System.Collections.Generic;
-using System.Linq;
+//using System.Linq;
 using System.Runtime.InteropServices;
 
 namespace TouchMenuApp
@@ -165,10 +165,6 @@ namespace TouchMenuApp
                 }
             }
             Hierarchy.Pop();
-
-            System.Console.WriteLine("Slider01: " + UIElements.sliderStates["Slider.001"]);
-            System.Console.WriteLine("Slider02: " + UIElements.sliderStates["Slider.002"]);
-            System.Console.WriteLine("Slider03: " + UIElements.sliderStates["Slider.003"]);
         }
 
         float FindLongestSide(Model model)
