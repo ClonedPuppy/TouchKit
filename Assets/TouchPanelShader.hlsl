@@ -113,7 +113,7 @@ float3 drawButton(FingerDist2 fingerInfo, float2 uv, float4 pos, float2 size, fl
 {
 
 	float d = length(max(abs(uv - float2(pos.x, pos.y)), size) - size) - radius;
-	float e = length(max(abs(uv - float2(pos.x, pos.y)), min(fingerInfo.on_plane.x, size) - 0.005) - (min(fingerInfo.on_plane.x, size) - 0.005)) - (radius - 0.005);
+	float e = length(max(abs(uv - float2(pos.x, pos.y)), min(fingerInfo.on_plane.x * 2, size) - 0.005) - (min(fingerInfo.on_plane.x * 2, size) - 0.005)) - (radius - 0.005);
 	
 	float result = smoothstep(0.55, 0.45, abs(d / thickness) * 5.0) + smoothstep(0.66, 0.33, e / thickness * 5.0);
 	

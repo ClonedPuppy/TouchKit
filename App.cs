@@ -76,7 +76,7 @@ namespace TouchMenuApp
 
             var i = 0;
             var j = 0;
-            
+
             // Parse out buttons and sliders in the gltf file
             foreach (var item in touchPanel.Nodes)
             {
@@ -165,6 +165,10 @@ namespace TouchMenuApp
                 }
             }
             Hierarchy.Pop();
+
+            System.Console.WriteLine("Slider01: " + UIElements.sliderStates["Slider.001"]);
+            System.Console.WriteLine("Slider02: " + UIElements.sliderStates["Slider.002"]);
+            System.Console.WriteLine("Slider03: " + UIElements.sliderStates["Slider.003"]);
         }
 
         float FindLongestSide(Model model)

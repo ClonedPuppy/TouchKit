@@ -12,7 +12,8 @@ namespace TouchMenuApp
         Vec3 size;
         Mesh button;
         Material buttonMat;
-        Dictionary<string, bool> buttonStates;
+        public static Dictionary<string, bool> buttonStates;
+        public static Dictionary<string, float> sliderStates;
 
         double interval;
         double interValTime;
@@ -25,6 +26,7 @@ namespace TouchMenuApp
             button = Mesh.GenerateCube(size);
             buttonMat = Default.MaterialUnlit;
             buttonStates = new Dictionary<string, bool>();
+            sliderStates = new Dictionary<string, float>();
             interval = 0.3d;
             interValTime = Time.Total + interval;
         }
@@ -75,19 +77,19 @@ namespace TouchMenuApp
                 }
             }
 
-            if (!_sticky & buttonStates[_nodeName] == true & Time.Total > interValTime)
-            {
-                buttonStates[_nodeName] = false;
-                //Assets.surfaceTopMat.SetFloat(_nodeName, 0);
-                interValTime += interval;
-            }
+            //if (!_sticky & buttonStates[_nodeName] == true & Time.Total > interValTime)
+            //{
+            //    buttonStates[_nodeName] = false;
+            //    //Assets.surfaceTopMat.SetFloat(_nodeName, 0);
+            //    interValTime += interval;
+            //}
         }
 
         public void Slider(Model _model, string _nodeName, bool _sticky)
         {
-            if (!buttonStates.ContainsKey(_nodeName))
+            if (!sliderStates.ContainsKey(_nodeName))
             {
-                buttonStates.Add(_nodeName, false);
+                sliderStates.Add(_nodeName, 0.5f);
             }
 
             node = _model.FindNode(_nodeName).ModelTransform.Pose;
@@ -96,10 +98,12 @@ namespace TouchMenuApp
             Vec3 volumeAt = new Vec3(0, 0, 0);
             Vec3 volumeSize = new Vec3(0.065f, 0.02f, 0.02f);
             
-            BtnState volumeState = UI.VolumeAt("Volume", new Bounds(volumeAt, volumeSize), UIConfirm.Push, out Handed hand);
+            BtnState volumeState = UI.VolumeAt(_nodeName + "Volume", new Bounds(volumeAt, volumeSize), UIConfirm.Push, out Handed hand);
             if (volumeState != BtnState.Inactive)
             {
-                App.touchPanelMat.SetFloat("sliderRange", Math.Clamp(Remap(Hierarchy.ToLocal(Input.Hand(hand)[FingerId.Index, JointId.Tip].Pose).position.x, -0.04f, 0.03f, 0.12f, 0.001f), 0, 02f));
+                App.touchPanelMat.SetFloat("sliderRange", Math.Clamp(Remap(Hierarchy.ToLocal(Input.Hand(hand)[FingerId.Index, JointId.Tip].Pose).position.x, -0.03f, 0.028f, 0.1f, 0.001f), 0, 0.2f));
+                sliderStates[_nodeName] = Math.Clamp(Remap(Hierarchy.ToLocal(Input.Hand(hand)[FingerId.Index, JointId.Tip].Pose).position.x, -0.03f, 0.028f, 0f, 1f), 0, 1f);
+                //Console.WriteLine(_nodeName.ToString());
             }
             UI.PopSurface();
         }
