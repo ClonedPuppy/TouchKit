@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "TouchMenu_DotNet": {
+      "commandName": "Project",
+      "nativeDebugging": true
+    }
+  }
+}
