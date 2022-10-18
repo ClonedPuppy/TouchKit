@@ -41,7 +41,7 @@ namespace TouchMenuApp
         List<Vec4> buttonList = new List<Vec4>();
         List<Vec4> sliderList = new List<Vec4>();
 
-        PushButton pushButton;
+        UIElements pushButton;
 
         public void Init()
         {
@@ -53,7 +53,7 @@ namespace TouchMenuApp
 
             SliderData sliders = new SliderData();
 
-            pushButton = new PushButton();
+            pushButton = new UIElements();
 
             floorMaterial = new Material(Shader.FromFile("floor.hlsl"));
             floorMaterial.Transparency = Transparency.Blend;

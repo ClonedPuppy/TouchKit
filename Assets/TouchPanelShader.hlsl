@@ -19,7 +19,7 @@ float roughness;
 //--vScale					= 1
 //--buttonAmount			= 1
 //--sliderAmount			= 1
-//--sliderRange				= 0
+//--sliderRange				= 0.05
 float tex_scale;
 float uvXoffset;
 float uvYoffset;

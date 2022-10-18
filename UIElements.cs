@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 namespace TouchMenuApp
 {
-    class PushButton
+    class UIElements
     {
         Bounds buttonBounds;
         Pose node;
@@ -17,7 +17,7 @@ namespace TouchMenuApp
         double interval;
         double interValTime;
 
-        public PushButton()
+        public UIElements()
         {
             size = new Vec3(0.02f, 0.02f, 0.02f);
             PoseNeutral = new Pose(V.XYZ(0, -0.01f, 0), Quat.FromAngles(90, 0, 0));
@@ -38,7 +38,6 @@ namespace TouchMenuApp
 
             node = _model.FindNode(_nodeName).ModelTransform.Pose;
 
-            //UI.ShowVolumes = true;
             UI.PushSurface(node);
             UI.WindowBegin(_nodeName + "Win", ref PoseNeutral, UIWin.Empty);
             UI.ButtonBehavior(
@@ -50,7 +49,6 @@ namespace TouchMenuApp
                 out BtnState focus);
             UI.WindowEnd();
             UI.PopSurface();
-            //UI.ShowVolumes = false;
 
             if ((state & BtnState.JustActive) > 0)
             {
@@ -94,7 +92,6 @@ namespace TouchMenuApp
 
             node = _model.FindNode(_nodeName).ModelTransform.Pose;
 
-            //UI.ShowVolumes = true;
             UI.PushSurface(node);
             Vec3 volumeAt = new Vec3(0, 0, 0);
             Vec3 volumeSize = new Vec3(0.065f, 0.02f, 0.02f);
@@ -102,12 +99,9 @@ namespace TouchMenuApp
             BtnState volumeState = UI.VolumeAt("Volume", new Bounds(volumeAt, volumeSize), UIConfirm.Push, out Handed hand);
             if (volumeState != BtnState.Inactive)
             {
-                Lines.AddAxis(Input.Hand(hand)[FingerId.Index, JointId.Tip].Pose, 0.05f);
                 App.touchPanelMat.SetFloat("sliderRange", Math.Clamp(Remap(Hierarchy.ToLocal(Input.Hand(hand)[FingerId.Index, JointId.Tip].Pose).position.x, -0.04f, 0.03f, 0.12f, 0.001f), 0, 02f));
-                Console.WriteLine(Hierarchy.ToLocal(Input.Hand(hand)[FingerId.Index, JointId.Tip].Pose).position.x);
             }
             UI.PopSurface();
-            //UI.ShowVolumes = false;
         }
 
         float Remap(float from, float fromMin, float fromMax, float toMin, float toMax)
