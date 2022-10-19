@@ -84,8 +84,8 @@ namespace TouchMenuApp
             //    interValTime += interval;
             //}
         }
-
-        public void Slider(Model _model, string _nodeName, bool _sticky)
+        
+        public float Slider(Model _model, string _nodeName, bool _sticky, float currentValue)
         {
             if (!sliderStates.ContainsKey(_nodeName))
             {
@@ -101,11 +101,14 @@ namespace TouchMenuApp
             BtnState volumeState = UI.VolumeAt(_nodeName + "Volume", new Bounds(volumeAt, volumeSize), UIConfirm.Push, out Handed hand);
             if (volumeState != BtnState.Inactive)
             {
-                App.touchPanelMat.SetFloat("sliderRange", Math.Clamp(Remap(Hierarchy.ToLocal(Input.Hand(hand)[FingerId.Index, JointId.Tip].Pose).position.x, -0.03f, 0.028f, 0.1f, 0.001f), 0, 0.2f));
+                var result = Math.Clamp(Remap(Hierarchy.ToLocal(Input.Hand(hand)[FingerId.Index, JointId.Tip].Pose).position.x, -0.03f, 0.028f, 0.1f, 0.001f), 0, 0.2f);
                 sliderStates[_nodeName] = Math.Clamp(Remap(Hierarchy.ToLocal(Input.Hand(hand)[FingerId.Index, JointId.Tip].Pose).position.x, -0.03f, 0.028f, 0f, 1f), 0, 1f);
-                //Console.WriteLine(_nodeName.ToString());
+                UI.PopSurface();
+                return result;
             }
             UI.PopSurface();
+            
+            return currentValue;
         }
 
         float Remap(float from, float fromMin, float fromMax, float toMin, float toMax)

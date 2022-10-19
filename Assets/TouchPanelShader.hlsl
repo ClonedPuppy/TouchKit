@@ -19,7 +19,6 @@ float roughness;
 //--vScale					= 1
 //--buttonAmount			= 1
 //--sliderAmount			= 1
-//--sliderRange				= 0.05
 float tex_scale;
 float uvXoffset;
 float uvYoffset;
@@ -27,7 +26,6 @@ float uScale;
 float vScale;
 int buttonAmount;
 int sliderAmount;
-float sliderRange;
 
 //--diffuse					= white
 //--emission				= white
@@ -44,6 +42,7 @@ SamplerState normal_s : register(s3);
 
 float4 button[20];
 float4 slider[20];
+float4 sliderRange[20];
 
 struct vsIn
 {
@@ -120,9 +119,9 @@ float3 drawButton(FingerDist2 fingerInfo, float2 uv, float4 pos, float2 size, fl
 	return float3(result, result * pos.w, result * pos.z);
 }
 
-float3 drawSlider(FingerDist2 fingerInfo, float2 uv, float4 pos, float2 size, float radius, float thickness)
+float3 drawSlider(FingerDist2 fingerInfo, float2 uv, float4 pos, float2 size, float radius, float thickness, float range)
 {
-	float xSize = sliderRange;
+	float xSize = range;
     
 	float d = length(max(abs(uv - float2(pos.x, pos.y)), size) - size) - radius;
 	float e = length(max(abs(uv - float2(pos.x - xSize, pos.y)), float2(size.x - xSize, size.y)) - float2(size.x - xSize, size.y)) - (radius - 0.010);
@@ -152,7 +151,7 @@ float4 ps(psIn input) : SV_TARGET
 	for (uint i = 0; i < sliderAmount; i++)
 	{
 		// drawSlider(uv, float2(.0, .0), float2(.15, .0013), 0.05, 0.025);
-		sliders += drawSlider(fingerDistance, input.uv, slider[i], float2(.08, .003), 0.035, 0.025);
+		sliders += drawSlider(fingerDistance, input.uv, slider[i], float2(.08, .003), 0.035, 0.025, sliderRange[i].x);
 	}
 	
 	float metallic_final = lerp(metal_rough.y * metallic, buttons.b + sliders.b, buttons.r + sliders.r);

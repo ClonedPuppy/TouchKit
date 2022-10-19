@@ -1,6 +1,5 @@
 ﻿using StereoKit;
 using System.Collections.Generic;
-//using System.Linq;
 using System.Runtime.InteropServices;
 
 namespace TouchMenuApp
@@ -19,6 +18,13 @@ namespace TouchMenuApp
         {
             [MarshalAs(UnmanagedType.ByValArray, SizeConst = 20)]
             public Vec4[] slider;
+        }
+
+        [StructLayout(LayoutKind.Sequential)]
+        struct SliderRangeData
+        {
+            [MarshalAs(UnmanagedType.ByValArray, SizeConst = 20)]
+            public Vec4[] sliderRange;
         }
 
         public SKSettings Settings => new SKSettings
@@ -40,18 +46,21 @@ namespace TouchMenuApp
 
         List<Vec4> buttonList = new List<Vec4>();
         List<Vec4> sliderList = new List<Vec4>();
+        List<Vec4> sliderRangeList = new List<Vec4>();
 
         UIElements pushButton;
+
+        ButtonData buttons = new ButtonData();
+
+        SliderData sliders = new SliderData();
+
+        SliderRangeData sliderRanges = new SliderRangeData();
 
         public void Init()
         {
             Renderer.SkyTex = Tex.FromCubemapEquirectangular(@"Container_Env.hdr");
             Renderer.SkyTex.OnLoaded += t => Renderer.SkyLight = t.CubemapLighting;
             Renderer.EnableSky = true;
-
-            ButtonData buttons = new ButtonData();
-
-            SliderData sliders = new SliderData();
 
             pushButton = new UIElements();
 
@@ -73,6 +82,8 @@ namespace TouchMenuApp
 
             buttons.button = new Vec4[20];
             sliders.slider = new Vec4[20];
+
+            sliderRanges.sliderRange = new Vec4[20];
 
             var i = 0;
             var j = 0;
@@ -128,11 +139,12 @@ namespace TouchMenuApp
                 }
             }
 
-            // Send the data to the shader
+            // Send UI element setup data to the shader
             touchPanelMat.SetInt("buttonAmount", i);
             touchPanelMat.SetInt("sliderAmount", j);
             touchPanelMat.SetData<ButtonData>("button", buttons);
             touchPanelMat.SetData<SliderData>("slider", sliders);
+            touchPanelMat.SetData<SliderRangeData>("sliderRange", sliderRanges);
 
             if (SK.ActiveDisplayMode == DisplayMode.Flatscreen)
             {
@@ -149,22 +161,24 @@ namespace TouchMenuApp
             touchPanel.Draw(cubePose.ToMatrix());
 
             Hierarchy.Push(cubePose.ToMatrix());
+            var i = 0;
             foreach (var item in touchPanel.Nodes)
             {
-                if (item.Name.Contains("panel"))
-                {
-                    //System.Console.WriteLine("nope"); ;
-                }
-                else if (item.Name.Contains("Button"))
+                if (item.Name.Contains("Button"))
                 {
                     pushButton.Button(touchPanel, item.Name, false);
                 }
                 else if (item.Name.Contains("Slider"))
                 {
-                    pushButton.Slider(touchPanel, item.Name, false);
+                    var value = sliderRanges.sliderRange[i].x;
+                    sliderRanges.sliderRange[i].x = pushButton.Slider(touchPanel, item.Name, false, value);
+                    i++;
                 }
             }
             Hierarchy.Pop();
+
+            // Update the shader with new data derived from button and slider manipulations
+            touchPanelMat.SetData<SliderRangeData>("sliderRange", sliderRanges);
         }
 
         float FindLongestSide(Model model)
