@@ -86,10 +86,9 @@ namespace TouchMenuApp
 
             sliderRanges.sliderRange = new Vec4[20];
 
+            // Parse out buttons and sliders in the gltf file
             var i = 0;
             var j = 0;
-
-            // Parse out buttons and sliders in the gltf file
             foreach (var item in touchPanel.Nodes)
             {
                 if (item.Name.Contains("Button"))
