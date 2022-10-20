@@ -27,7 +27,7 @@ namespace TouchMenuApp
             public Vec4[] sliderRange;
         }
 
-        Pose cubePose = new Pose(0, 0, -0.4f, Quat.FromAngles(-90, 180, 0));
+        Pose panelPose = new Pose(0, 0, -0.4f, Quat.FromAngles(-90, 180, 0));
         Model touchPanel;
         Tex touchPanelDiff;
         Tex touchPanelMRAO;
@@ -48,7 +48,7 @@ namespace TouchMenuApp
         Vec3 size;
         Mesh button;
         Material buttonMat;
-        
+
         public static Dictionary<string, bool> buttonStates;
         public static Dictionary<string, float> sliderStates;
 
@@ -91,52 +91,36 @@ namespace TouchMenuApp
             var j = 0;
             foreach (var item in touchPanel.Nodes)
             {
+                float _positionX = (item.LocalTransform.Pose.position.x + (touchPanel.Bounds.dimensions.x / 2)) / longestSide;
+                float _positionY = (item.LocalTransform.Pose.position.z + (touchPanel.Bounds.dimensions.z / 2)) / longestSide;
+
+                float metallic = 0;
+                float roughness = 0;
+                if (item.Info.Count > 0)
+                {
+                    if (item.Info.Contains("metallic"))
+                    {
+                        metallic = float.Parse(item.Info["metallic"]);
+                    }
+                    if (item.Info.Contains("roughness"))
+                    {
+                        roughness = float.Parse(item.Info["roughness"]);
+                    }
+                }
+
                 if (item.Name.Contains("Button"))
                 {
-                    float _positionX = (item.LocalTransform.Pose.position.x + (touchPanel.Bounds.dimensions.x / 2)) / longestSide;
-                    float _positionY = (item.LocalTransform.Pose.position.z + (touchPanel.Bounds.dimensions.z / 2)) / longestSide;
-
-                    float metallic = 0;
-                    float roughness = 0;
-                    if (item.Info.Count > 0)
-                    {
-                        if (item.Info.Contains("metallic"))
-                        {
-                            metallic = float.Parse(item.Info["metallic"]);
-                        }
-                        if (item.Info.Contains("roughness"))
-                        {
-                            roughness = float.Parse(item.Info["roughness"]);
-                        }
-                    }
-
                     buttons.button[i] = new Vec4(_positionX, _positionY, metallic, roughness);
                     buttonList.Add(new Vec4(_positionX, _positionY, metallic, roughness));
                     i++;
                 }
                 else if (item.Name.Contains("Slider"))
                 {
-                    float _positionX = (item.LocalTransform.Pose.position.x + (touchPanel.Bounds.dimensions.x / 2)) / longestSide;
-                    float _positionY = (item.LocalTransform.Pose.position.z + (touchPanel.Bounds.dimensions.z / 2)) / longestSide;
-
-                    float metallic = 0;
-                    float roughness = 0;
-                    if (item.Info.Count > 0)
-                    {
-                        if (item.Info.Contains("metallic"))
-                        {
-                            metallic = float.Parse(item.Info["metallic"]);
-                        }
-                        if (item.Info.Contains("roughness"))
-                        {
-                            roughness = float.Parse(item.Info["roughness"]);
-                        }
-                    }
-
                     sliders.slider[j] = new Vec4(_positionX, _positionY, metallic, roughness);
                     sliderList.Add(new Vec4(_positionX, _positionY, metallic, roughness));
                     j++;
                 }
+                
                 // Send UI element setup data to the shader
                 touchPanelMat.SetInt("buttonAmount", i);
                 touchPanelMat.SetInt("sliderAmount", j);
@@ -148,21 +132,21 @@ namespace TouchMenuApp
 
         public void DrawUI()
         {
-            UI.Handle("Cube", ref cubePose, touchPanel.Bounds);
-            touchPanel.Draw(cubePose.ToMatrix());
+            UI.Handle("Panel", ref panelPose, touchPanel.Bounds);
+            touchPanel.Draw(panelPose.ToMatrix());
 
-            Hierarchy.Push(cubePose.ToMatrix());
+            Hierarchy.Push(panelPose.ToMatrix());
             var i = 0;
             foreach (var item in touchPanel.Nodes)
             {
                 if (item.Name.Contains("Button"))
                 {
-                    Button(touchPanel, item.Name, false);
+                    Button(touchPanel, item.Name);
                 }
                 else if (item.Name.Contains("Slider"))
                 {
                     var value = sliderRanges.sliderRange[i].x;
-                    sliderRanges.sliderRange[i].x = Slider(touchPanel, item.Name, false, value);
+                    sliderRanges.sliderRange[i].x = HSlider(touchPanel, item.Name, value);
                     i++;
                 }
             }
@@ -173,7 +157,7 @@ namespace TouchMenuApp
 
         }
 
-        void Button(Model _model, string _nodeName, bool _sticky)
+        void Button(Model _model, string _nodeName)
         {
             if (!buttonStates.ContainsKey(_nodeName))
             {
@@ -227,7 +211,7 @@ namespace TouchMenuApp
             //}
         }
 
-        float Slider(Model _model, string _nodeName, bool _sticky, float currentValue)
+        float HSlider(Model _model, string _nodeName, float currentValue)
         {
             if (!sliderStates.ContainsKey(_nodeName))
             {

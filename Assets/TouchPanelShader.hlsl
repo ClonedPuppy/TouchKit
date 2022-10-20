@@ -119,7 +119,7 @@ float3 drawButton(FingerDist2 fingerInfo, float2 uv, float4 pos, float2 size, fl
 	return float3(result, result * pos.w, result * pos.z);
 }
 
-float3 drawSlider(FingerDist2 fingerInfo, float2 uv, float4 pos, float2 size, float radius, float thickness, float range)
+float3 drawHSlider(FingerDist2 fingerInfo, float2 uv, float4 pos, float2 size, float radius, float thickness, float range)
 {
 	float xSize = range;
     
@@ -131,12 +131,22 @@ float3 drawSlider(FingerDist2 fingerInfo, float2 uv, float4 pos, float2 size, fl
 	return float3(result, result * pos.w, result * pos.z);
 }
 
+float3 drawVSlider(FingerDist2 fingerInfo, float2 uv, float4 pos, float2 size, float radius, float thickness, float range)
+{
+	float d = length(max(abs(uv - float2(pos.x, pos.y)), size) - size) - radius;
+	float e = length(max(abs(uv - float2(pos.x, pos.y + range)), float2(size.x, size.y + range)) - float2(size.x, size.y + range)) - (radius - 0.010);
+    
+	float result = smoothstep(0.55, 0.45, abs(d / thickness) * 5.0) + smoothstep(0.66, 0.33, e / thickness * 5.0);
+
+	return float3(result, result * pos.w, result * pos.z);
+}
+
 float4 ps(psIn input) : SV_TARGET
 {
 	float4 albedo = diffuse.Sample(diffuse_s, input.uv) * input.color;
 	float3 emissive = emission.Sample(emission_s, input.uv).rgb * emission_factor.rgb;
 	float2 metal_rough = metal.Sample(metal_s, input.uv).gb; // rough is g, b is metallic
-	float ao = metal.Sample(metal_s, input.uv).r; // occlusion can sometimes be part of the metal texture, uses the r channel
+	float ao = metal.Sample(metal_s, input.uv).r; // occlusion uses the r channel
 	
 	FingerDist2 fingerDistance = FingerDistanceInfo2(input.world.xyz, input.normal);
 	
@@ -150,14 +160,12 @@ float4 ps(psIn input) : SV_TARGET
 	
 	for (uint i = 0; i < sliderAmount; i++)
 	{
-		// drawSlider(uv, float2(.0, .0), float2(.15, .0013), 0.05, 0.025);
-		sliders += drawSlider(fingerDistance, input.uv, slider[i], float2(.08, .003), 0.035, 0.025, sliderRange[i].x);
+		sliders += drawHSlider(fingerDistance, input.uv, slider[i], float2(.08, .003), 0.035, 0.025, sliderRange[i].x);
+		sliders += drawVSlider(fingerDistance, input.uv, slider[i], float2(.003, .08), 0.035, 0.025, sliderRange[i].x);
 	}
 	
 	float metallic_final = lerp(metal_rough.y * metallic, buttons.b + sliders.b, buttons.r + sliders.r);
 	float rough_final = lerp(metal_rough.x * roughness, buttons.g + sliders.g, buttons.r + sliders.r);
-	
-	//albedo = float4(lerp(albedo.rgb, float3(1, 1, 1), buttons.rrr), albedo.a);
 	
 	albedo = float4(albedo.rgb + buttons.rrr + sliders.rrr, albedo.a);
 	
