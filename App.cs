@@ -1,6 +1,5 @@
 ﻿using StereoKit;
-using System.Collections.Generic;
-using System.Runtime.InteropServices;
+
 
 namespace TouchMenuApp
 {
@@ -10,7 +9,7 @@ namespace TouchMenuApp
         {
             appName = "TouchMenu",
             assetsFolder = "Assets",
-            displayPreference = DisplayMode.Flatscreen
+            displayPreference = DisplayMode.MixedReality
         };
 
         UIElements uiElements;
