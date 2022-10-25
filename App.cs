@@ -23,7 +23,7 @@ namespace TouchMenuApp
 
             Renderer.SkyTex.OnLoaded += t => Renderer.SkyLight = t.CubemapLighting;
             Renderer.EnableSky = true;
-            
+
             uiElements = new UIElements();
 
             floorMaterial = new Material(Shader.FromFile("floor.hlsl"));

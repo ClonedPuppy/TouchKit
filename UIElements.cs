@@ -145,8 +145,10 @@ namespace TouchMenuApp
                 }
                 else if (item.Name.Contains("Slider"))
                 {
+                    UI.ShowVolumes = true;
                     var value = sliderRanges.sliderRange[i].x;
                     sliderRanges.sliderRange[i].x = HSlider(touchPanel, item.Name, value);
+                    UI.ShowVolumes = false;
                     i++;
                 }
             }
