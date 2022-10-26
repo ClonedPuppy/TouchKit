@@ -14,6 +14,7 @@
     <None Remove="Assets\Container_Env.hdr" />
     <None Remove="Assets\night_free_Env.hdr" />
     <None Remove="Assets\Panel_v001.glb" />
+    <None Remove="Assets\pbr_shader.hlsl" />
     <None Remove="Assets\TouchMenuDiffuse.png" />
     <None Remove="Assets\TouchMenuMRAO.png" />
     <None Remove="Assets\TouchPanelShader.hlsl" />
@@ -34,6 +35,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <SKShader Include="Assets\pbr_shader.hlsl" />
     <SKShader Include="Assets\TouchPanelShader.hlsl" />
     <SKShader Include="Assets\floor.hlsl" />
   </ItemGroup>
@@ -44,6 +46,10 @@
 
   <ItemGroup>
     <UpToDateCheckInput Remove="Assets\TouchPanelShader.hlsl" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <UpToDateCheckInput Remove="Assets\pbr_shader.hlsl" />
   </ItemGroup>
 
 </Project>

@@ -161,7 +161,7 @@ float4 ps(psIn input) : SV_TARGET
 	for (uint i = 0; i < sliderAmount; i++)
 	{
 		sliders += drawHSlider(fingerDistance, input.uv, slider[i], float2(.08, .003), 0.035, 0.025, sliderRange[i].x);
-		sliders += drawVSlider(fingerDistance, input.uv, slider[i], float2(.003, .08), 0.035, 0.025, sliderRange[i].x);
+		//sliders += drawVSlider(fingerDistance, input.uv, slider[i], float2(.003, .08), 0.035, 0.025, sliderRange[i].x);
 	}
 	
 	float metallic_final = lerp(metal_rough.y * metallic, buttons.b + sliders.b, buttons.r + sliders.r);

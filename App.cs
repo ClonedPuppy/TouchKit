@@ -1,10 +1,19 @@
 ﻿using StereoKit;
-
+using System.Collections.Generic;
 
 namespace TouchMenuApp
 {
     public class App
     {
+        struct Abilities
+        {
+            public int type;
+            public string name;
+            public int defState;
+            public int minRange;
+            public int maxRange;
+        }
+        
         public SKSettings Settings => new SKSettings
         {
             appName = "TouchMenu",
@@ -16,12 +25,13 @@ namespace TouchMenuApp
         
         Matrix floorTransform = Matrix.TS(new Vec3(0, -1.5f, 0), new Vec3(30, 0.1f, 30));
         Material floorMaterial;
-
+        
         public void Init()
         {
-            var SkyTexture = Tex.FromCubemapEquirectangular(@"Container_Env.hdr");
+            Dictionary<int, Abilities> buttonStates = new Dictionary<int, Abilities>();
 
-            Renderer.SkyTex.OnLoaded += t => Renderer.SkyLight = t.CubemapLighting;
+            Renderer.SkyTex = Tex.FromCubemapEquirectangular("Container_Env.hdr", out SphericalHarmonics lighting);
+            Renderer.SkyLight = lighting;
             Renderer.EnableSky = true;
 
             uiElements = new UIElements();

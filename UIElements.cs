@@ -32,11 +32,7 @@ namespace TouchMenuApp
         Tex touchPanelDiff;
         Tex touchPanelMRAO;
         Shader touchPanelShader;
-        public static Material touchPanelMat;
-
-        List<Vec4> buttonList = new List<Vec4>();
-        List<Vec4> sliderList = new List<Vec4>();
-        List<Vec4> sliderRangeList = new List<Vec4>();
+        Material touchPanelMat;
 
         ButtonData buttons = new ButtonData();
         SliderData sliders = new SliderData();
@@ -49,9 +45,6 @@ namespace TouchMenuApp
         Mesh button;
         Material buttonMat;
 
-        public static Dictionary<string, bool> buttonStates;
-        public static Dictionary<string, float> sliderStates;
-
         double interval;
         double interValTime;
 
@@ -59,22 +52,22 @@ namespace TouchMenuApp
         public UIElements()
         {
             touchPanel = Model.FromFile("Panel_v001.glb");
-            touchPanelDiff = Tex.FromFile("TouchMenuDiffuse.png");
-            touchPanelMRAO = Tex.FromFile("TouchMenuMRAO.png");
-            touchPanelShader = Shader.FromFile("TouchPanelShader.hlsl");
+            //touchPanelDiff = Tex.FromFile("TouchMenuDiffuse.png");
+            //touchPanelMRAO = Tex.FromFile("TouchMenuMRAO.png");
+            touchPanelShader = Shader.FromFile("pbr_shader.hlsl");
+            //touchPanelShader = Default.MaterialPBR.Shader;
             touchPanelMat = new Material(touchPanelShader);
-            touchPanelMat[MatParamName.DiffuseTex] = touchPanelDiff;
-            touchPanelMat[MatParamName.MetalTex] = touchPanelMRAO;
-            touchPanelMat.Transparency = Transparency.Blend;
+            //touchPanelMat[MatParamName.DiffuseTex] = touchPanelDiff;
+            //touchPanelMat[MatParamName.MetalTex] = touchPanelMRAO;
+            //touchPanelMat.Transparency = Transparency.Blend;
             touchPanel.Visuals[0].Material = touchPanelMat;
 
             size = new Vec3(0.02f, 0.02f, 0.02f);
             PoseNeutral = new Pose(V.XYZ(0, -0.01f, 0), Quat.FromAngles(90, 0, 0));
             buttonBounds = new Bounds(size);
             button = Mesh.GenerateCube(size);
-            buttonMat = Default.MaterialUnlit;
-            buttonStates = new Dictionary<string, bool>();
-            sliderStates = new Dictionary<string, float>();
+            //buttonMat = Default.MaterialUnlit;
+            
             interval = 0.3d;
             interValTime = Time.Total + interval;
 
@@ -96,37 +89,35 @@ namespace TouchMenuApp
 
                 float metallic = 0;
                 float roughness = 0;
-                if (item.Info.Count > 0)
-                {
-                    if (item.Info.Contains("metallic"))
-                    {
-                        metallic = float.Parse(item.Info["metallic"]);
-                    }
-                    if (item.Info.Contains("roughness"))
-                    {
-                        roughness = float.Parse(item.Info["roughness"]);
-                    }
-                }
+                //if (item.Info.Count > 0)
+                //{
+                //    if (item.Info.Contains("metallic"))
+                //    {
+                //        metallic = float.Parse(item.Info["metallic"]);
+                //    }
+                //    if (item.Info.Contains("roughness"))
+                //    {
+                //        roughness = float.Parse(item.Info["roughness"]);
+                //    }
+                //}
 
                 if (item.Name.Contains("Button"))
                 {
                     buttons.button[i] = new Vec4(_positionX, _positionY, metallic, roughness);
-                    buttonList.Add(new Vec4(_positionX, _positionY, metallic, roughness));
                     i++;
                 }
                 else if (item.Name.Contains("Slider"))
                 {
                     sliders.slider[j] = new Vec4(_positionX, _positionY, metallic, roughness);
-                    sliderList.Add(new Vec4(_positionX, _positionY, metallic, roughness));
                     j++;
                 }
                 
                 // Send UI element setup data to the shader
-                touchPanelMat.SetInt("buttonAmount", i);
-                touchPanelMat.SetInt("sliderAmount", j);
-                touchPanelMat.SetData<ButtonData>("button", buttons);
-                touchPanelMat.SetData<SliderData>("slider", sliders);
-                touchPanelMat.SetData<SliderRangeData>("sliderRange", sliderRanges);
+                //touchPanelMat.SetInt("buttonAmount", i);
+                //touchPanelMat.SetInt("sliderAmount", j);
+                //touchPanelMat.SetData<ButtonData>("button", buttons);
+                //touchPanelMat.SetData<SliderData>("slider", sliders);
+                //touchPanelMat.SetData<SliderRangeData>("sliderRange", sliderRanges);
             }
         }
 
@@ -145,10 +136,10 @@ namespace TouchMenuApp
                 }
                 else if (item.Name.Contains("Slider"))
                 {
-                    UI.ShowVolumes = true;
+                    //UI.ShowVolumes = true;
                     var value = sliderRanges.sliderRange[i].x;
                     sliderRanges.sliderRange[i].x = HSlider(touchPanel, item.Name, value);
-                    UI.ShowVolumes = false;
+                    //UI.ShowVolumes = false;
                     i++;
                 }
             }
@@ -161,11 +152,6 @@ namespace TouchMenuApp
 
         void Button(Model _model, string _nodeName)
         {
-            if (!buttonStates.ContainsKey(_nodeName))
-            {
-                buttonStates.Add(_nodeName, false);
-            }
-
             node = _model.FindNode(_nodeName).ModelTransform.Pose;
 
             UI.PushSurface(node);
@@ -182,27 +168,27 @@ namespace TouchMenuApp
 
             if ((state & BtnState.JustActive) > 0)
             {
-                buttonStates[_nodeName] = buttonStates[_nodeName] == true ? false : true;
-                interValTime = Time.Total + interval;
-                if (buttonStates[_nodeName] == true)
-                {
-                    //System.Console.WriteLine(_nodeName.ToString() + " Pressed");
-                    //Assets.surfaceTopMat.SetFloat(_nodeName, 1);
-                    //if (nodeName == "Play")
-                    //{
-                    //    buttonStates["Stop"] = false;
-                    //    Assets.surfaceTopMat.SetFloat("Stop", 0);
-                    //}
-                    //else
-                    //{
-                    //    buttonStates["Play"] = false;
-                    //    Assets.surfaceTopMat.SetFloat("Play", 0);
-                    //}
-                }
-                else
-                {
-                    //Assets.surfaceTopMat.SetFloat(_nodeName, 0);
-                }
+                //buttonStates[_nodeName] = buttonStates[_nodeName] == true ? false : true;
+                //interValTime = Time.Total + interval;
+                //if (buttonStates[_nodeName] == true)
+                //{
+                //    //System.Console.WriteLine(_nodeName.ToString() + " Pressed");
+                //    //Assets.surfaceTopMat.SetFloat(_nodeName, 1);
+                //    //if (nodeName == "Play")
+                //    //{
+                //    //    buttonStates["Stop"] = false;
+                //    //    Assets.surfaceTopMat.SetFloat("Stop", 0);
+                //    //}
+                //    //else
+                //    //{
+                //    //    buttonStates["Play"] = false;
+                //    //    Assets.surfaceTopMat.SetFloat("Play", 0);
+                //    //}
+                //}
+                //else
+                //{
+                //    //Assets.surfaceTopMat.SetFloat(_nodeName, 0);
+                //}
             }
 
             //if (!_sticky & buttonStates[_nodeName] == true & Time.Total > interValTime)
@@ -215,11 +201,6 @@ namespace TouchMenuApp
 
         float HSlider(Model _model, string _nodeName, float currentValue)
         {
-            if (!sliderStates.ContainsKey(_nodeName))
-            {
-                sliderStates.Add(_nodeName, 0.5f);
-            }
-
             node = _model.FindNode(_nodeName).ModelTransform.Pose;
 
             UI.PushSurface(node);
@@ -230,7 +211,6 @@ namespace TouchMenuApp
             if (volumeState != BtnState.Inactive)
             {
                 var result = System.Math.Clamp(Remap(Hierarchy.ToLocal(Input.Hand(hand)[FingerId.Index, JointId.Tip].Pose).position.x, -0.03f, 0.028f, 0.1f, 0.001f), 0, 0.2f);
-                sliderStates[_nodeName] = System.Math.Clamp(Remap(Hierarchy.ToLocal(Input.Hand(hand)[FingerId.Index, JointId.Tip].Pose).position.x, -0.03f, 0.028f, 0f, 1f), 0, 1f);
                 UI.PopSurface();
                 return result;
             }
