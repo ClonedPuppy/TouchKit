@@ -29,9 +29,6 @@ namespace TouchMenuApp
 
         Pose panelPose = new Pose(0, 0, -0.4f, Quat.FromAngles(-90, 180, 0));
         Model touchPanel;
-        Tex touchPanelDiff;
-        Tex touchPanelMRAO;
-        Shader touchPanelShader;
         Material touchPanelMat;
 
         ButtonData buttons = new ButtonData();
@@ -51,24 +48,17 @@ namespace TouchMenuApp
         // Constructor
         public UIElements()
         {
-            
-            //touchPanelDiff = Tex.FromFile("TouchMenuDiffuse.png");
-            //touchPanelMRAO = Tex.FromFile("TouchMenuMRAO.png");
-            touchPanelShader = Shader.FromFile("pbr_shader.hlsl");
-            //touchPanelShader = Default.MaterialPBR.Shader;
-            touchPanelMat = new Material(touchPanelShader);
-            //touchPanelMat[MatParamName.DiffuseTex] = touchPanelDiff;
-            //touchPanelMat[MatParamName.MetalTex] = touchPanelMRAO;
-            //touchPanelMat.Transparency = Transparency.Blend;
+            touchPanelMat = new Material(Shader.FromFile("TouchPanelShader.hlsl"));
             touchPanel = Model.FromFile("Panel_v001.glb");
             touchPanelMat[MatParamName.DiffuseTex] = touchPanel.Visuals[0].Material.GetTexture("diffuse");
+            touchPanelMat[MatParamName.MetalTex] = touchPanel.Visuals[0].Material.GetTexture("metal");
             touchPanel.Visuals[0].Material = touchPanelMat;
+            touchPanelMat.Transparency = Transparency.Blend;
 
             size = new Vec3(0.02f, 0.02f, 0.02f);
             PoseNeutral = new Pose(V.XYZ(0, -0.01f, 0), Quat.FromAngles(90, 0, 0));
             buttonBounds = new Bounds(size);
             button = Mesh.GenerateCube(size);
-            //buttonMat = Default.MaterialUnlit;
             
             interval = 0.3d;
             interValTime = Time.Total + interval;
@@ -89,8 +79,8 @@ namespace TouchMenuApp
                 float _positionX = (item.LocalTransform.Pose.position.x + (touchPanel.Bounds.dimensions.x / 2)) / longestSide;
                 float _positionY = (item.LocalTransform.Pose.position.z + (touchPanel.Bounds.dimensions.z / 2)) / longestSide;
 
-                float metallic = 0;
-                float roughness = 0;
+                float metallic = 1;
+                float roughness = 0.2f;
                 //if (item.Info.Count > 0)
                 //{
                 //    if (item.Info.Contains("metallic"))
@@ -113,13 +103,13 @@ namespace TouchMenuApp
                     sliders.slider[j] = new Vec4(_positionX, _positionY, metallic, roughness);
                     j++;
                 }
-                
+
                 // Send UI element setup data to the shader
-                //touchPanelMat.SetInt("buttonAmount", i);
-                //touchPanelMat.SetInt("sliderAmount", j);
-                //touchPanelMat.SetData<ButtonData>("button", buttons);
-                //touchPanelMat.SetData<SliderData>("slider", sliders);
-                //touchPanelMat.SetData<SliderRangeData>("sliderRange", sliderRanges);
+                touchPanelMat.SetInt("buttonAmount", i);
+                touchPanelMat.SetInt("sliderAmount", j);
+                touchPanelMat.SetData<ButtonData>("button", buttons);
+                touchPanelMat.SetData<SliderData>("slider", sliders);
+                touchPanelMat.SetData<SliderRangeData>("sliderRange", sliderRanges);
             }
         }
 
