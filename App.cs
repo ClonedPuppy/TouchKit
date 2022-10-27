@@ -5,14 +5,7 @@ namespace TouchMenuApp
 {
     public class App
     {
-        struct Abilities
-        {
-            public int type;
-            public string name;
-            public int defState;
-            public int minRange;
-            public int maxRange;
-        }
+
         
         public SKSettings Settings => new SKSettings
         {
@@ -28,7 +21,7 @@ namespace TouchMenuApp
         
         public void Init()
         {
-            Dictionary<int, Abilities> buttonStates = new Dictionary<int, Abilities>();
+            
 
             Renderer.SkyTex = Tex.FromCubemapEquirectangular("Container_Env.hdr", out SphericalHarmonics lighting);
             Renderer.SkyLight = lighting;

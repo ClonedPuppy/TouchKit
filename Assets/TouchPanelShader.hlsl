@@ -6,7 +6,7 @@
 //--color:color				= 1, 1, 1, 1
 //--emission_factor:color	= 0,0,0,0
 //--metallic				= 1
-//--roughness				= 1
+//--roughness				= 0.2
 float4 color;
 float4 emission_factor;
 float metallic;

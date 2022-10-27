@@ -26,7 +26,15 @@ namespace TouchMenuApp
             [MarshalAs(UnmanagedType.ByValArray, SizeConst = 20)]
             public Vec4[] sliderRange;
         }
-
+        struct Abilities
+        {
+            public int type;
+            public string name;
+            public int defState;
+            public int minRange;
+            public int maxRange;
+        }
+        
         Pose panelPose = new Pose(0, 0, -0.4f, Quat.FromAngles(-90, 180, 0));
         Model touchPanel;
         Material touchPanelMat;
@@ -45,9 +53,14 @@ namespace TouchMenuApp
         double interval;
         double interValTime;
 
+        // Holds all the button abilities for the UI parsed from the blender file
+        Dictionary<int, Abilities> buttonAbilities;
+
         // Constructor
         public UIElements()
         {
+            buttonAbilities = new Dictionary<int, Abilities>();
+            
             touchPanelMat = new Material(Shader.FromFile("TouchPanelShader.hlsl"));
             touchPanel = Model.FromFile("Panel_v001.glb");
             touchPanelMat[MatParamName.DiffuseTex] = touchPanel.Visuals[0].Material.GetTexture("diffuse");
@@ -81,6 +94,7 @@ namespace TouchMenuApp
 
                 float metallic = 1;
                 float roughness = 0.2f;
+
                 //if (item.Info.Count > 0)
                 //{
                 //    if (item.Info.Contains("metallic"))
@@ -93,18 +107,31 @@ namespace TouchMenuApp
                 //    }
                 //}
 
-                if (item.Name.Contains("Button"))
+                if (item.Name != "panel")
                 {
-                    buttons.button[i] = new Vec4(_positionX, _positionY, metallic, roughness);
-                    i++;
-                }
-                else if (item.Name.Contains("Slider"))
-                {
-                    sliders.slider[j] = new Vec4(_positionX, _positionY, metallic, roughness);
-                    j++;
+                    if (item.Info.Get("type") == "button")
+                    {
+                        System.Console.WriteLine(item.Info.Get("name").ToString());
+                        System.Console.WriteLine(item.Info.Get("defState").ToString());
+                        System.Console.WriteLine(item.Info.Get("minRange").ToString());
+                        System.Console.WriteLine(item.Info.Get("maxRange").ToString());
+                        buttons.button[i] = new Vec4(_positionX, _positionY, metallic, roughness);
+                        i++;
+                    }
+                    else if (item.Info.Get("type") == "vslider")
+                    {
+                        System.Console.WriteLine(item.Info.Get("name").ToString());
+                        System.Console.WriteLine(item.Info.Get("defState").ToString());
+                        System.Console.WriteLine(item.Info.Get("minRange").ToString());
+                        System.Console.WriteLine(item.Info.Get("maxRange").ToString());
+                        sliders.slider[j] = new Vec4(_positionX, _positionY, metallic, roughness);
+                        j++;
+                    }
                 }
 
-                // Send UI element setup data to the shader
+
+
+                //// Send UI element setup data to the shader
                 touchPanelMat.SetInt("buttonAmount", i);
                 touchPanelMat.SetInt("sliderAmount", j);
                 touchPanelMat.SetData<ButtonData>("button", buttons);
