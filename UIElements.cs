@@ -51,7 +51,7 @@ namespace TouchMenuApp
         // Constructor
         public UIElements()
         {
-            touchPanel = Model.FromFile("Panel_v001.glb");
+            
             //touchPanelDiff = Tex.FromFile("TouchMenuDiffuse.png");
             //touchPanelMRAO = Tex.FromFile("TouchMenuMRAO.png");
             touchPanelShader = Shader.FromFile("pbr_shader.hlsl");
@@ -60,6 +60,8 @@ namespace TouchMenuApp
             //touchPanelMat[MatParamName.DiffuseTex] = touchPanelDiff;
             //touchPanelMat[MatParamName.MetalTex] = touchPanelMRAO;
             //touchPanelMat.Transparency = Transparency.Blend;
+            touchPanel = Model.FromFile("Panel_v001.glb");
+            touchPanelMat[MatParamName.DiffuseTex] = touchPanel.Visuals[0].Material.GetTexture("diffuse");
             touchPanel.Visuals[0].Material = touchPanelMat;
 
             size = new Vec3(0.02f, 0.02f, 0.02f);
