@@ -28,10 +28,10 @@ namespace TouchMenuApp
         }
 
         [StructLayout(LayoutKind.Sequential)]
-        struct SliderRangeData
+        struct SliderValuesData
         {
             [MarshalAs(UnmanagedType.ByValArray, SizeConst = 20)]
-            public Vec4[] sliderRange;
+            public Vec4[] sliderValue;
         }
         struct Abilities
         {
@@ -43,13 +43,13 @@ namespace TouchMenuApp
         }
         
         Pose panelPose = new Pose(0, 0, -0.4f, Quat.FromAngles(-90, 180, 0));
-        Model touchPanel;
-        Material touchPanelMat;
+        Model panel;
+        Material panelMaterial;
 
         ButtonData buttons = new ButtonData();
         HsliderData hSliders = new HsliderData();
         VsliderData vSliders = new VsliderData();
-        SliderRangeData sliderRanges = new SliderRangeData();
+        SliderValuesData sliderValues = new SliderValuesData();
 
         Bounds buttonBounds;
         Pose node;
@@ -68,54 +68,42 @@ namespace TouchMenuApp
         {
             buttonAbilities = new Dictionary<int, Abilities>();
             
-            touchPanelMat = new Material(Shader.FromFile("TouchPanelShader.hlsl"));
-            touchPanel = Model.FromFile("Panel_v001.glb");
-            touchPanelMat[MatParamName.DiffuseTex] = touchPanel.Visuals[0].Material.GetTexture("diffuse");
-            touchPanelMat[MatParamName.MetalTex] = touchPanel.Visuals[0].Material.GetTexture("metal");
-            touchPanel.Visuals[0].Material = touchPanelMat;
-            touchPanelMat.Transparency = Transparency.Blend;
+            panelMaterial = new Material(Shader.FromFile("TouchPanelShader.hlsl"));
+            panel = Model.FromFile("Panel_v001.glb");
+            panelMaterial[MatParamName.DiffuseTex] = panel.Visuals[0].Material.GetTexture("diffuse");
+            panelMaterial[MatParamName.MetalTex] = panel.Visuals[0].Material.GetTexture("metal");
+            panel.Visuals[0].Material = panelMaterial;
+            panelMaterial.Transparency = Transparency.Blend;
 
-            size = new Vec3(0.02f, 0.02f, 0.02f);
+            size = new Vec3(0.02f, 0.01f, 0.02f);
             PoseNeutral = new Pose(V.XYZ(0, -0.01f, 0), Quat.FromAngles(90, 0, 0));
             buttonBounds = new Bounds(size);
             button = Mesh.GenerateCube(size);
             
-            interval = 0.3d;
+            interval = 0.1d;
             interValTime = Time.Total + interval;
 
             // Is the panel landscape or portrait?
-            float longestSide = FindLongestSide(touchPanel);
+            float longestSide = FindLongestSide(panel);
 
             buttons.button = new Vec4[20];
             hSliders.hSlider = new Vec4[10];
             vSliders.vSlider = new Vec4[10];
 
-            sliderRanges.sliderRange = new Vec4[20];
+            sliderValues.sliderValue = new Vec4[20];
 
             // Parse out buttons and sliders in the gltf file
             var i = 0;
             var j = 0;
             var k = 0;
             
-            foreach (var item in touchPanel.Nodes)
+            foreach (var item in panel.Nodes)
             {
-                float _positionX = (item.LocalTransform.Pose.position.x + (touchPanel.Bounds.dimensions.x / 2)) / longestSide;
-                float _positionY = (item.LocalTransform.Pose.position.z + (touchPanel.Bounds.dimensions.z / 2)) / longestSide;
+                float _positionX = (item.LocalTransform.Pose.position.x + (panel.Bounds.dimensions.x / 2)) / longestSide;
+                float _positionY = (item.LocalTransform.Pose.position.z + (panel.Bounds.dimensions.z / 2)) / longestSide;
 
                 float metallic = 1;
                 float roughness = 0.2f;
-
-                //if (item.Info.Count > 0)
-                //{
-                //    if (item.Info.Contains("metallic"))
-                //    {
-                //        metallic = float.Parse(item.Info["metallic"]);
-                //    }
-                //    if (item.Info.Contains("roughness"))
-                //    {
-                //        roughness = float.Parse(item.Info["roughness"]);
-                //    }
-                //}
 
                 if (item.Name != "panel")
                 {
@@ -136,59 +124,56 @@ namespace TouchMenuApp
                     }
                 }
 
-
-
-                //// Send UI element setup data to the shader
-                touchPanelMat.SetInt("buttonAmount", i);
-                touchPanelMat.SetInt("hSliderAmount", j);
-                touchPanelMat.SetInt("vSliderAmount", k);
-                touchPanelMat.SetData<ButtonData>("button", buttons);
-                touchPanelMat.SetData<HsliderData>("hslider", hSliders);
-                touchPanelMat.SetData<VsliderData>("vslider", vSliders);
-                touchPanelMat.SetData<SliderRangeData>("sliderRange", sliderRanges);
+                // Send UI element setup data to the shader
+                panelMaterial.SetInt("buttonAmount", i);
+                panelMaterial.SetInt("hSliderAmount", j);
+                panelMaterial.SetInt("vSliderAmount", k);
+                panelMaterial.SetData<ButtonData>("button", buttons);
+                panelMaterial.SetData<HsliderData>("hslider", hSliders);
+                panelMaterial.SetData<VsliderData>("vslider", vSliders);
+                panelMaterial.SetData<SliderValuesData>("sliderValue", sliderValues);
             }
         }
 
         public void DrawUI()
         {
-            UI.Handle("Panel", ref panelPose, touchPanel.Bounds);
-            touchPanel.Draw(panelPose.ToMatrix());
+            UI.Handle("Panel", ref panelPose, panel.Bounds);
+            panel.Draw(panelPose.ToMatrix());
 
             Hierarchy.Push(panelPose.ToMatrix());
             var i = 0;
             var j = 9;
-            foreach (var item in touchPanel.Nodes)
+            foreach (var item in panel.Nodes)
             {
                 if (item.Name != "panel")
                 {
                     if (item.Info.Get("type") == "button")
                     {
-                        Button(touchPanel, item.Name);
+                        Button(panel, item.Name);
                     }
                     else if (item.Info.Get("type") == "hslider")
                     {
-                        //UI.ShowVolumes = true;
-                        var value = sliderRanges.sliderRange[i].x;
-                        sliderRanges.sliderRange[i].x = HSlider(touchPanel, item.Name, value);
-                        //UI.ShowVolumes = false;
+                        var value = sliderValues.sliderValue[i].x;
+                        sliderValues.sliderValue[i].x = HSlider(panel, item.Name, value);
                         i++;
                     }
                     else if (item.Info.Get("type") == "vslider")
                     {
-                        //UI.ShowVolumes = true;
-                        var value = sliderRanges.sliderRange[j].x;
-                        sliderRanges.sliderRange[j].x = VSlider(touchPanel, item.Name, value);
-                        //UI.ShowVolumes = false;
+                        var value = sliderValues.sliderValue[j].x;
+                        sliderValues.sliderValue[j].x = VSlider(panel, item.Name, value);
                         j++;
                     }
                 }
-
             }
             Hierarchy.Pop();
 
-            // Update the shader with new data derived from button and slider manipulations
-            touchPanelMat.SetData<SliderRangeData>("sliderRange", sliderRanges);
+            if (Time.Total > interValTime)
+            {
+                // Update the shader with new data derived from button and slider manipulations
+                panelMaterial.SetData<SliderValuesData>("sliderValue", sliderValues);
 
+                interValTime = Time.Total + interval;
+            }
         }
 
         void Button(Model _model, string _nodeName)
@@ -246,9 +231,9 @@ namespace TouchMenuApp
 
             UI.PushSurface(node);
             Vec3 volumeAt = new Vec3(0, 0, 0);
-            Vec3 volumeSize = new Vec3(0.065f, 0.02f, 0.02f);
+            Vec3 volumeSize = new Vec3(0.065f, 0.01f, 0.01f);
 
-            BtnState volumeState = UI.VolumeAt(_nodeName + "Volume", new Bounds(volumeAt, volumeSize), UIConfirm.Push, out Handed hand);
+            BtnState volumeState = UI.VolumeAt(_nodeName + "HVolume", new Bounds(volumeAt, volumeSize), UIConfirm.Push, out Handed hand);
             if (volumeState != BtnState.Inactive)
             {
                 var result = System.Math.Clamp(Remap(Hierarchy.ToLocal(Input.Hand(hand)[FingerId.Index, JointId.Tip].Pose).position.x, -0.03f, 0.028f, 0.1f, 0.001f), 0, 0.2f);
@@ -266,12 +251,12 @@ namespace TouchMenuApp
 
             UI.PushSurface(node);
             Vec3 volumeAt = new Vec3(0, 0, 0);
-            Vec3 volumeSize = new Vec3(0.02f, 0.02f, 0.065f);
+            Vec3 volumeSize = new Vec3(0.01f, 0.01f, 0.065f);
 
-            BtnState volumeState = UI.VolumeAt(_nodeName + "Volume", new Bounds(volumeAt, volumeSize), UIConfirm.Push, out Handed hand);
+            BtnState volumeState = UI.VolumeAt(_nodeName + "VVolume", new Bounds(volumeAt, volumeSize), UIConfirm.Push, out Handed hand);
             if (volumeState != BtnState.Inactive)
             {
-                var result = System.Math.Clamp(Remap(Hierarchy.ToLocal(Input.Hand(hand)[FingerId.Index, JointId.Tip].Pose).position.z, 0.03f, -0.028f, 0.001f, 0.1f), 0, 0.2f);
+                var result = System.Math.Clamp(Remap(Hierarchy.ToLocal(Input.Hand(hand)[FingerId.Index, JointId.Tip].Pose).position.z, 0.03f, -0.028f, 0.11f, 0.001f), 0.001f, 0.11f);
                 UI.PopSurface();
                 return result;
             }

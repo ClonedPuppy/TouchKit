@@ -5,8 +5,6 @@ namespace TouchMenuApp
 {
     public class App
     {
-
-        
         public SKSettings Settings => new SKSettings
         {
             appName = "TouchMenu",
@@ -21,8 +19,6 @@ namespace TouchMenuApp
         
         public void Init()
         {
-            
-
             Renderer.SkyTex = Tex.FromCubemapEquirectangular("Container_Env.hdr", out SphericalHarmonics lighting);
             Renderer.SkyLight = lighting;
             Renderer.EnableSky = true;
