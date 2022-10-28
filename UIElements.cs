@@ -28,46 +28,31 @@ namespace TouchMenuApp
         }
 
         [StructLayout(LayoutKind.Sequential)]
-        struct SliderValuesData
+        struct SliderValueData
         {
             [MarshalAs(UnmanagedType.ByValArray, SizeConst = 20)]
             public Vec4[] sliderValue;
         }
-        struct Abilities
-        {
-            public int type;
-            public string name;
-            public int defState;
-            public int minRange;
-            public int maxRange;
-        }
-
-        Pose panelPose = new Pose(0, 0, -0.4f, Quat.FromAngles(-90, 180, 0));
+        
         Model panel;
         Material panelMaterial;
+        Pose panelPose = new Pose(0, 0, -0.4f, Quat.FromAngles(-90, 180, 0));
 
         ButtonData buttons = new ButtonData();
         HsliderData hSliders = new HsliderData();
         VsliderData vSliders = new VsliderData();
-        SliderValuesData sliderValues = new SliderValuesData();
+        SliderValueData sliderValues = new SliderValueData();
 
-        Bounds buttonBounds;
         Pose node;
-        Pose PoseNeutral;
-        Vec3 size;
-        Mesh button;
+        Pose ghostVolumePose;
+        Mesh ghostVolume;
 
         double interval;
         double interValTime;
 
-        // Holds all the button abilities for the UI parsed from the blender file
-        Dictionary<int, Abilities> buttonAbilities;
-
         // Constructor
         public UIElements()
         {
-            buttonAbilities = new Dictionary<int, Abilities>();
-
             panelMaterial = new Material(Shader.FromFile("TouchPanelShader.hlsl"));
             panel = Model.FromFile("Panel_v001.glb");
             panelMaterial[MatParamName.DiffuseTex] = panel.Visuals[0].Material.GetTexture("diffuse");
@@ -75,10 +60,8 @@ namespace TouchMenuApp
             panel.Visuals[0].Material = panelMaterial;
             panelMaterial.Transparency = Transparency.Blend;
 
-            size = new Vec3(0.02f, 0.01f, 0.02f);
-            PoseNeutral = new Pose(V.XYZ(0, -0.01f, 0), Quat.FromAngles(90, 0, 0));
-            buttonBounds = new Bounds(size);
-            button = Mesh.GenerateCube(size);
+            ghostVolumePose = new Pose(V.XYZ(0, -0.01f, 0), Quat.FromAngles(90, 0, 0));
+            ghostVolume = Mesh.GenerateCube(new Vec3(0.01f, 0.01f, 0.01f));
 
             interval = 0.1d;
             interValTime = Time.Total + interval;
@@ -89,11 +72,10 @@ namespace TouchMenuApp
             buttons.button = new Vec4[20];
             hSliders.hSlider = new Vec4[10];
             vSliders.vSlider = new Vec4[10];
-
             sliderValues.sliderValue = new Vec4[20];
 
-            // Parse out buttons and sliders in the gltf file
-            var buttonCounter = 0;
+            // Parse out the UI elements in the panel gltf file
+            var buttonCounter  = 0;
             var hSliderCounter = 0;
             var vSliderCounter = 0;
 
@@ -131,7 +113,7 @@ namespace TouchMenuApp
                 panelMaterial.SetData<ButtonData>("button", buttons);
                 panelMaterial.SetData<HsliderData>("hslider", hSliders);
                 panelMaterial.SetData<VsliderData>("vslider", vSliders);
-                panelMaterial.SetData<SliderValuesData>("sliderValue", sliderValues);
+                panelMaterial.SetData<SliderValueData>("sliderValue", sliderValues);
             }
         }
 
@@ -170,7 +152,7 @@ namespace TouchMenuApp
             if (Time.Total > interValTime)
             {
                 // Update the shader with new data derived from button and slider manipulations
-                panelMaterial.SetData<SliderValuesData>("sliderValue", sliderValues);
+                panelMaterial.SetData<SliderValueData>("sliderValue", sliderValues);
 
                 interValTime = Time.Total + interval;
             }
@@ -179,12 +161,12 @@ namespace TouchMenuApp
         void Button(Model _model, string _nodeName)
         {
             node = _model.FindNode(_nodeName).ModelTransform.Pose;
-
+            
             UI.PushSurface(node);
-            UI.WindowBegin(_nodeName + "Win", ref PoseNeutral, UIWin.Empty);
+            UI.WindowBegin(_nodeName + "Win", ref ghostVolumePose, UIWin.Empty);
             UI.ButtonBehavior(
-                button.Bounds.dimensions.XZ.XY0 / 2,
-                button.Bounds.dimensions.XZ,
+                ghostVolume.Bounds.dimensions.XZ.XY0 / 2,
+                ghostVolume.Bounds.dimensions.XZ,
                 _nodeName,
                 out float finger,
                 out BtnState state,

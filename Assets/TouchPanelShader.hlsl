@@ -110,33 +110,46 @@ FingerDist2 FingerDistanceInfo2(float3 world_pos, float3 world_norm)
 	return result;
 }
 
+float3 drawDefaultButton(FingerDist2 fingerInfo, float2 uv, float4 pos)
+{
+
+	float d = length(max(abs(uv - float2(pos.x, pos.y)), 0.03) - 0.03) - 0.005;
+	float e = length(max(abs(uv - float2(pos.x, pos.y)), min(fingerInfo.on_plane * 1.5, 0.03) - 0.005) - (min(fingerInfo.on_plane * 1.5, 0.03) - 0.005));
+	
+	float result = smoothstep(0.55, 0.45, abs(d / 0.025) * 5.0) + smoothstep(0.66, 0.33, e / 0.025 * 5.0);
+	
+	return float3(result, result * pos.w, result * pos.z);
+}
+
 float3 drawButton(FingerDist2 fingerInfo, float2 uv, float4 pos, float2 size, float radius, float thickness)
 {
 
 	float d = length(max(abs(uv - float2(pos.x, pos.y)), size) - size) - radius;
-	float e = length(max(abs(uv - float2(pos.x, pos.y)), min(fingerInfo.on_plane * 1.5, size) - 0.005) - (min(fingerInfo.on_plane * 1.5, size) - 0.005)) - (radius - 0.005);
+	//float e = length(max(abs(uv - float2(pos.x, pos.y)), min(fingerInfo.on_plane * 1.5, size) - 0.005) - (min(fingerInfo.on_plane * 1.5, size) - 0.005)) - (radius - 0.005);
 	
-	float result = smoothstep(0.55, 0.45, abs(d / thickness) * 5.0) + smoothstep(0.66, 0.33, e / thickness * 5.0);
+	float result = smoothstep(0.55, 0.45, abs(d / thickness) * 5.0);
 	
 	return float3(result, result * pos.w, result * pos.z);
 }
 
-float3 drawHSlider(float2 uv, float4 pos, float2 size, float radius, float thickness, float range)
+float3 drawHSlider(float2 uv, float4 pos, float range)
 {
-	float d = length(max(abs(uv - float2(pos.x, pos.y)), size) - size) - radius;
-	float e = length(max(abs(uv - float2(pos.x - range, pos.y)), float2(size.x - range, size.y)) - float2(size.x - range, size.y)) - (radius - 0.010);
+	float2 size = float2(.08, .003);
+	float d = length(max(abs(uv - float2(pos.x, pos.y)), size) - size) - 0.035;
+	float e = length(max(abs(uv - float2(pos.x - range, pos.y)), float2(size.x - range, size.y)) - float2(size.x - range, size.y)) - 0.025;
     
-	float result = smoothstep(0.55, 0.45, abs(d / thickness) * 5.0) + smoothstep(0.66, 0.33, e / thickness * 5.0);
+	float result = smoothstep(0.55, 0.45, abs(d / 0.025) * 5.0) + smoothstep(0.66, 0.33, e / 0.025 * 5.0);
 
 	return float3(result, result * pos.w, result * pos.z);
 }
 
-float3 drawVSlider(float2 uv, float4 pos, float2 size, float radius, float thickness, float range)
+float3 drawVSlider(float2 uv, float4 pos, float range)
 {
-	float d = length(max(abs(uv - float2(pos.x, pos.y)), size) - size) - radius;
-	float e = length(max(abs(uv - float2(pos.x, pos.y + range)), float2(size.x, size.y - range)) - float2(size.x, size.y - range)) - (radius - 0.010);
+	float2 size = float2(.003, .08);
+	float d = length(max(abs(uv - float2(pos.x, pos.y)), size) - size) - 0.035;
+	float e = length(max(abs(uv - float2(pos.x, pos.y + range)), float2(size.x, size.y - range)) - float2(size.x, size.y - range)) - 0.025;
     
-	float result = smoothstep(0.55, 0.45, abs(d / thickness) * 5.0) + smoothstep(0.66, 0.33, e / thickness * 5.0);
+	float result = smoothstep(0.55, 0.45, abs(d / 0.025) * 5.0) + smoothstep(0.66, 0.33, e / 0.025 * 5.0);
 
 	return float3(result, result * pos.w, result * pos.z);
 }
@@ -155,17 +168,22 @@ float4 ps(psIn input) : SV_TARGET
 	
 	for (uint i = 0; i < buttonAmount; i++)
 	{
-		buttons += drawButton(fingerDistance, input.uv, button[i], 0.03, 0.005, 0.025);
+		buttons += drawDefaultButton(fingerDistance, input.uv, button[i]);
 	}
+	
+	//for (uint i = 0; i < buttonAmount; i++)
+	//{
+	//	buttons += drawButton(fingerDistance, input.uv, button[i], 0.03, 0.005, 0.025);
+	//}
 	
 	for (uint i = 0; i < hSliderAmount; i++)
 	{
-		sliders += drawHSlider(input.uv, hslider[i], float2(.08, .003), 0.035, 0.025, sliderValue[i].x);
+		sliders += drawHSlider(input.uv, hslider[i], sliderValue[i].x);
 	}
 	
 	for (uint i = 0; i < vSliderAmount; i++)
 	{
-		sliders += drawVSlider(input.uv, vslider[i], float2(.003, .08), 0.035, 0.025, sliderValue[i + 9].x);
+		sliders += drawVSlider(input.uv, vslider[i], sliderValue[i + 9].x);
 	}
 	
 	float metallic_final = lerp(metal_rough.y * metallic, buttons.b + sliders.b, buttons.r + sliders.r);
