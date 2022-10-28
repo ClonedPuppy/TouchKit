@@ -93,9 +93,9 @@ namespace TouchMenuApp
             sliderValues.sliderValue = new Vec4[20];
 
             // Parse out buttons and sliders in the gltf file
-            var i = 0;
-            var j = 0;
-            var k = 0;
+            var buttonCounter = 0;
+            var hSliderCounter = 0;
+            var vSliderCounter = 0;
 
             foreach (var item in panel.Nodes)
             {
@@ -109,25 +109,25 @@ namespace TouchMenuApp
                 {
                     if (item.Info.Get("type") == "button")
                     {
-                        buttons.button[i] = new Vec4(_positionX, _positionY, metallic, roughness);
-                        i++;
+                        buttons.button[buttonCounter] = new Vec4(_positionX, _positionY, metallic, roughness);
+                        buttonCounter++;
                     }
                     else if (item.Info.Get("type") == "hslider")
                     {
-                        hSliders.hSlider[j] = new Vec4(_positionX, _positionY, metallic, roughness);
-                        j++;
+                        hSliders.hSlider[hSliderCounter] = new Vec4(_positionX, _positionY, metallic, roughness);
+                        hSliderCounter++;
                     }
                     else if (item.Info.Get("type") == "vslider")
                     {
-                        vSliders.vSlider[k] = new Vec4(_positionX, _positionY, metallic, roughness);
-                        k++;
+                        vSliders.vSlider[vSliderCounter] = new Vec4(_positionX, _positionY, metallic, roughness);
+                        vSliderCounter++;
                     }
                 }
 
                 // Send UI element setup data to the shader
-                panelMaterial.SetInt("buttonAmount", i);
-                panelMaterial.SetInt("hSliderAmount", j);
-                panelMaterial.SetInt("vSliderAmount", k);
+                panelMaterial.SetInt("buttonAmount", buttonCounter);
+                panelMaterial.SetInt("hSliderAmount", hSliderCounter);
+                panelMaterial.SetInt("vSliderAmount", vSliderCounter);
                 panelMaterial.SetData<ButtonData>("button", buttons);
                 panelMaterial.SetData<HsliderData>("hslider", hSliders);
                 panelMaterial.SetData<VsliderData>("vslider", vSliders);
@@ -141,8 +141,8 @@ namespace TouchMenuApp
             panel.Draw(panelPose.ToMatrix());
 
             Hierarchy.Push(panelPose.ToMatrix());
-            var i = 0;
-            var j = 9;
+            var hSliderCounter = 0;
+            var vSliderCounter = 9;
             foreach (var item in panel.Nodes)
             {
                 if (item.Name != "panel")
@@ -153,15 +153,15 @@ namespace TouchMenuApp
                     }
                     else if (item.Info.Get("type") == "hslider")
                     {
-                        var value = sliderValues.sliderValue[i].x;
-                        sliderValues.sliderValue[i].x = HSlider(panel, item.Name, value);
-                        i++;
+                        var value = sliderValues.sliderValue[hSliderCounter].x;
+                        sliderValues.sliderValue[hSliderCounter].x = HSlider(panel, item.Name, value);
+                        hSliderCounter++;
                     }
                     else if (item.Info.Get("type") == "vslider")
                     {
-                        var value = sliderValues.sliderValue[j].x;
-                        sliderValues.sliderValue[j].x = VSlider(panel, item.Name, value);
-                        j++;
+                        var value = sliderValues.sliderValue[vSliderCounter].x;
+                        sliderValues.sliderValue[vSliderCounter].x = VSlider(panel, item.Name, value);
+                        vSliderCounter++;
                     }
                 }
             }
