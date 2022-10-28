@@ -41,7 +41,7 @@ namespace TouchMenuApp
             public int minRange;
             public int maxRange;
         }
-        
+
         Pose panelPose = new Pose(0, 0, -0.4f, Quat.FromAngles(-90, 180, 0));
         Model panel;
         Material panelMaterial;
@@ -67,7 +67,7 @@ namespace TouchMenuApp
         public UIElements()
         {
             buttonAbilities = new Dictionary<int, Abilities>();
-            
+
             panelMaterial = new Material(Shader.FromFile("TouchPanelShader.hlsl"));
             panel = Model.FromFile("Panel_v001.glb");
             panelMaterial[MatParamName.DiffuseTex] = panel.Visuals[0].Material.GetTexture("diffuse");
@@ -79,7 +79,7 @@ namespace TouchMenuApp
             PoseNeutral = new Pose(V.XYZ(0, -0.01f, 0), Quat.FromAngles(90, 0, 0));
             buttonBounds = new Bounds(size);
             button = Mesh.GenerateCube(size);
-            
+
             interval = 0.1d;
             interValTime = Time.Total + interval;
 
@@ -96,7 +96,7 @@ namespace TouchMenuApp
             var i = 0;
             var j = 0;
             var k = 0;
-            
+
             foreach (var item in panel.Nodes)
             {
                 float _positionX = (item.LocalTransform.Pose.position.x + (panel.Bounds.dimensions.x / 2)) / longestSide;
