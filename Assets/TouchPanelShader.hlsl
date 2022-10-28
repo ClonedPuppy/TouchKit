@@ -25,7 +25,8 @@ float uvYoffset;
 float uScale;
 float vScale;
 int buttonAmount;
-int sliderAmount;
+int hSliderAmount;
+int vSliderAmount;
 
 //--diffuse					= white
 //--emission				= white
@@ -41,7 +42,8 @@ Texture2D normal : register(t3);
 SamplerState normal_s : register(s3);
 
 float4 button[20];
-float4 slider[20];
+float4 hslider[10];
+float4 vslider[10];
 float4 sliderRange[20];
 
 struct vsIn
@@ -121,10 +123,8 @@ float3 drawButton(FingerDist2 fingerInfo, float2 uv, float4 pos, float2 size, fl
 
 float3 drawHSlider(FingerDist2 fingerInfo, float2 uv, float4 pos, float2 size, float radius, float thickness, float range)
 {
-	float xSize = range;
-    
 	float d = length(max(abs(uv - float2(pos.x, pos.y)), size) - size) - radius;
-	float e = length(max(abs(uv - float2(pos.x - xSize, pos.y)), float2(size.x - xSize, size.y)) - float2(size.x - xSize, size.y)) - (radius - 0.010);
+	float e = length(max(abs(uv - float2(pos.x - range, pos.y)), float2(size.x - range, size.y)) - float2(size.x - range, size.y)) - (radius - 0.010);
     
 	float result = smoothstep(0.55, 0.45, abs(d / thickness) * 5.0) + smoothstep(0.66, 0.33, e / thickness * 5.0);
 
@@ -134,7 +134,7 @@ float3 drawHSlider(FingerDist2 fingerInfo, float2 uv, float4 pos, float2 size, f
 float3 drawVSlider(FingerDist2 fingerInfo, float2 uv, float4 pos, float2 size, float radius, float thickness, float range)
 {
 	float d = length(max(abs(uv - float2(pos.x, pos.y)), size) - size) - radius;
-	float e = length(max(abs(uv - float2(pos.x, pos.y + range)), float2(size.x, size.y + range)) - float2(size.x, size.y + range)) - (radius - 0.010);
+	float e = length(max(abs(uv - float2(pos.x, pos.y - range)), float2(size.x, size.y - range)) - float2(size.x, size.y - range)) - (radius - 0.010);
     
 	float result = smoothstep(0.55, 0.45, abs(d / thickness) * 5.0) + smoothstep(0.66, 0.33, e / thickness * 5.0);
 
@@ -158,10 +158,14 @@ float4 ps(psIn input) : SV_TARGET
 		buttons += drawButton(fingerDistance, input.uv, button[i], 0.03, 0.005, 0.025);
 	}
 	
-	for (uint i = 0; i < sliderAmount; i++)
+	for (uint i = 0; i < hSliderAmount; i++)
 	{
-		sliders += drawHSlider(fingerDistance, input.uv, slider[i], float2(.08, .003), 0.035, 0.025, sliderRange[i].x);
-		//sliders += drawVSlider(fingerDistance, input.uv, slider[i], float2(.003, .08), 0.035, 0.025, sliderRange[i].x);
+		sliders += drawHSlider(fingerDistance, input.uv, hslider[i], float2(.08, .003), 0.035, 0.025, sliderRange[i].x);
+	}
+	
+	for (uint i = 0; i < vSliderAmount; i++)
+	{
+		sliders += drawVSlider(fingerDistance, input.uv, vslider[i], float2(.003, .08), 0.035, 0.025, -sliderRange[i + 9].x);
 	}
 	
 	float metallic_final = lerp(metal_rough.y * metallic, buttons.b + sliders.b, buttons.r + sliders.r);

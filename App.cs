@@ -11,7 +11,7 @@ namespace TouchMenuApp
         {
             appName = "TouchMenu",
             assetsFolder = "Assets",
-            displayPreference = DisplayMode.MixedReality
+            displayPreference = DisplayMode.Flatscreen
         };
 
         UIElements uiElements;
