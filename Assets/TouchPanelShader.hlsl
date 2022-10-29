@@ -6,7 +6,7 @@
 //--color:color				= 1, 1, 1, 1
 //--emission_factor:color	= 0,0,0,0
 //--metallic				= 1
-//--roughness				= 0.2
+//--roughness				= 1
 float4 color;
 float4 emission_factor;
 float metallic;
@@ -19,6 +19,9 @@ float roughness;
 //--vScale					= 1
 //--buttonAmount			= 1
 //--sliderAmount			= 1
+//--buttonAlbedo			= 1, 1, 1, 1
+//--activeColor				= 0, 0, 0, 0,
+//--buttonRough				= 0
 float tex_scale;
 float uvXoffset;
 float uvYoffset;
@@ -27,6 +30,9 @@ float vScale;
 int buttonAmount;
 int hSliderAmount;
 int vSliderAmount;
+float4 buttonAlbedo;
+float4 activeColor;
+float buttonRough;
 
 //--diffuse					= white
 //--emission				= white
@@ -118,7 +124,7 @@ float3 drawDefaultButton(FingerDist2 fingerInfo, float2 uv, float4 pos)
 	
 	float result = smoothstep(0.55, 0.45, abs(d / 0.025) * 5.0) + smoothstep(0.66, 0.33, e / 0.025 * 5.0);
 	
-	return float3(result, result * pos.w, result * pos.z);
+	return float3(result, result, result);
 }
 
 float3 drawButton(FingerDist2 fingerInfo, float2 uv, float4 pos, float2 size, float radius, float thickness)
@@ -129,7 +135,7 @@ float3 drawButton(FingerDist2 fingerInfo, float2 uv, float4 pos, float2 size, fl
 	
 	float result = smoothstep(0.55, 0.45, abs(d / thickness) * 5.0);
 	
-	return float3(result, result * pos.w, result * pos.z);
+	return float3(result, result, result);
 }
 
 float3 drawHSlider(float2 uv, float4 pos, float range)
@@ -140,7 +146,7 @@ float3 drawHSlider(float2 uv, float4 pos, float range)
     
 	float result = smoothstep(0.55, 0.45, abs(d / 0.025) * 5.0) + smoothstep(0.66, 0.33, e / 0.025 * 5.0);
 
-	return float3(result, result * pos.w, result * pos.z);
+	return float3(result, result, result);
 }
 
 float3 drawVSlider(float2 uv, float4 pos, float range)
@@ -151,7 +157,7 @@ float3 drawVSlider(float2 uv, float4 pos, float range)
     
 	float result = smoothstep(0.55, 0.45, abs(d / 0.025) * 5.0) + smoothstep(0.66, 0.33, e / 0.025 * 5.0);
 
-	return float3(result, result * pos.w, result * pos.z);
+	return float3(result, result, result);
 }
 
 float4 ps(psIn input) : SV_TARGET
@@ -186,10 +192,17 @@ float4 ps(psIn input) : SV_TARGET
 		sliders += drawVSlider(input.uv, vslider[i], sliderValue[i + 9].x);
 	}
 	
-	float metallic_final = lerp(metal_rough.y * metallic, buttons.b + sliders.b, buttons.r + sliders.r);
-	float rough_final = lerp(metal_rough.x * roughness, buttons.g + sliders.g, buttons.r + sliders.r);
+	//float metallic_final = metallic;
+	//float rough_final = roughness;
 	
-	albedo = float4(albedo.rgb + buttons.rrr + sliders.rrr, albedo.a);
+	float metallic_final = lerp(metal_rough.y * metallic, activeColor.a, buttons.r + sliders.r);
+	float rough_final = lerp(metal_rough.x * roughness, buttonRough, buttons.r + sliders.r);
+	
+	albedo = float4(lerp(albedo.rgb, buttonAlbedo.rgb, (buttons.rgb + sliders.rgb) * buttonAlbedo.a), albedo.a);
+	
+	//albedo = float4(rough_final.rrr, 1);
+	
+	//albedo = float4(albedo.rgb + ((buttons.rrr + sliders.rrr) * buttonAlbedo.rgb), (albedo.a - (buttons.r + sliders.r)) + buttonAlbedo.a);
 	
 	float4 color = skpbr_shade(albedo, input.irradiance, ao, metallic_final, rough_final, input.view_dir, input.normal);
 	

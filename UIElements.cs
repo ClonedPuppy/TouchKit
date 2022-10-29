@@ -1,4 +1,5 @@
 ﻿using StereoKit;
+using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
 
@@ -50,6 +51,10 @@ namespace TouchMenuApp
         double interval;
         double interValTime;
 
+        Vec4 buttonAlbedo;
+        Vec4 activeColor;
+        float buttonRough;
+
         // Constructor
         public UIElements()
         {
@@ -57,8 +62,17 @@ namespace TouchMenuApp
             panel = Model.FromFile("Panel_v001.glb");
             panelMaterial[MatParamName.DiffuseTex] = panel.Visuals[0].Material.GetTexture("diffuse");
             panelMaterial[MatParamName.MetalTex] = panel.Visuals[0].Material.GetTexture("metal");
+            panelMaterial[MatParamName.MetallicAmount] = panel.Visuals[0].Material.GetFloat("metallic");
+            panelMaterial[MatParamName.RoughnessAmount] = panel.Visuals[0].Material.GetFloat("roughness");
             panel.Visuals[0].Material = panelMaterial;
             panelMaterial.Transparency = Transparency.Blend;
+
+            var errt = panel.Visuals[0].Material.GetAllParamInfo();
+
+            foreach (var item in errt)
+            {
+                Console.WriteLine(item.name.ToString() + ": " + item.type.ToString());
+            }
 
             ghostVolumePose = new Pose(V.XYZ(0, -0.01f, 0), Quat.FromAngles(90, 0, 0));
             ghostVolume = Mesh.GenerateCube(new Vec3(0.01f, 0.01f, 0.01f));
@@ -84,26 +98,48 @@ namespace TouchMenuApp
                 float _positionX = (item.LocalTransform.Pose.position.x + (panel.Bounds.dimensions.x / 2)) / longestSide;
                 float _positionY = (item.LocalTransform.Pose.position.z + (panel.Bounds.dimensions.z / 2)) / longestSide;
 
-                float metallic = 1;
-                float roughness = 0.2f;
-
-                if (item.Name != "panel")
+                if (item.Name == "panel")
                 {
-                    if (item.Info.Get("type") == "button")
-                    {
-                        buttons.button[buttonCounter] = new Vec4(_positionX, _positionY, metallic, roughness);
-                        buttonCounter++;
-                    }
-                    else if (item.Info.Get("type") == "hslider")
-                    {
-                        hSliders.hSlider[hSliderCounter] = new Vec4(_positionX, _positionY, metallic, roughness);
-                        hSliderCounter++;
-                    }
-                    else if (item.Info.Get("type") == "vslider")
-                    {
-                        vSliders.vSlider[vSliderCounter] = new Vec4(_positionX, _positionY, metallic, roughness);
-                        vSliderCounter++;
-                    }
+                    var _tempString = item.Info.Get("albedo").Split(new char[] { '[', ']', ',' }, StringSplitOptions.RemoveEmptyEntries);
+                    var _r = float.Parse(_tempString[0]);
+                    var _g = float.Parse(_tempString[1]);
+                    var _b = float.Parse(_tempString[2]);
+                    var _a = float.Parse(_tempString[3]);
+                    buttonAlbedo = new Vec4(_r, _g, _b, _a);
+
+                    Console.WriteLine("buttonAlbedo: " + buttonAlbedo.ToString());
+
+                    _tempString = item.Info.Get("activeColor").Split(new char[] { '[', ']', ',' }, StringSplitOptions.RemoveEmptyEntries);
+                    _r = float.Parse(_tempString[0]);
+                    _g = float.Parse(_tempString[1]);
+                    _b = float.Parse(_tempString[2]);
+
+                    var _temp = item.Info.Get("metalness");
+                    _a = float.Parse(_temp);
+
+                    activeColor = new Vec4(_r, _g, _b, _a);
+
+                    Console.WriteLine("activeColor: " + activeColor.ToString());
+
+                    buttonRough = float.Parse(item.Info.Get("roughness"));
+
+                    Console.WriteLine("roughness: " + buttonRough.ToString());
+
+                }
+                else if (item.Info.Get("type") == "button")
+                {
+                    buttons.button[buttonCounter] = new Vec4(_positionX, _positionY, 0, 0);
+                    buttonCounter++;
+                }
+                else if (item.Info.Get("type") == "hslider")
+                {
+                    hSliders.hSlider[hSliderCounter] = new Vec4(_positionX, _positionY, 0, 0);
+                    hSliderCounter++;
+                }
+                else if (item.Info.Get("type") == "vslider")
+                {
+                    vSliders.vSlider[vSliderCounter] = new Vec4(_positionX, _positionY, 0, 0);
+                    vSliderCounter++;
                 }
 
                 // Send UI element setup data to the shader
@@ -114,6 +150,9 @@ namespace TouchMenuApp
                 panelMaterial.SetData<HsliderData>("hslider", hSliders);
                 panelMaterial.SetData<VsliderData>("vslider", vSliders);
                 panelMaterial.SetData<SliderValueData>("sliderValue", sliderValues);
+                panelMaterial.SetVector("buttonAlbedo", buttonAlbedo);
+                panelMaterial.SetVector("activeColor", activeColor);
+                panelMaterial.SetFloat("buttonRough", buttonRough);
             }
         }
 
