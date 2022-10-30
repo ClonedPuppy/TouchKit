@@ -21,13 +21,13 @@ namespace TouchMenuApp
         
         public void Init()
         {
-            Renderer.SkyTex = Tex.FromCubemapEquirectangular("Container_Env.hdr", out SphericalHarmonics lighting);
+            Renderer.SkyTex = Tex.FromCubemapEquirectangular("Courtyard.hdr", out SphericalHarmonics lighting);
             Renderer.SkyLight = lighting;
             Renderer.EnableSky = true;
 
-            uiElements = new UIElements();
+            uiElements = new UIElements("Panel");
 
-            uiPhone = new UIElements();
+            uiPhone = new UIElements("Phone");
 
             floorMaterial = new Material(Shader.FromFile("floor.hlsl"));
             floorMaterial.Transparency = Transparency.Blend;
@@ -43,9 +43,9 @@ namespace TouchMenuApp
             if (SK.System.displayType == Display.Opaque)
                 Default.MeshCube.Draw(floorMaterial, floorTransform);
 
-            uiElements.DrawUI(1);
+            uiElements.DrawUI();
 
-            uiPhone.DrawUI(2);
+            //uiPhone.DrawUI();
 
             //if (uiElements.buttonStates.Count > 0)
             //{

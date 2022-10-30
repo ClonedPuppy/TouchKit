@@ -12,15 +12,25 @@
   </ItemGroup>
   <ItemGroup>
     <None Remove="Assets\Container_Env.hdr" />
+    <None Remove="Assets\courtyard.hdr" />
     <None Remove="Assets\night_free_Env.hdr" />
+    <None Remove="Assets\Panel.hlsl" />
     <None Remove="Assets\Panel_v001.glb" />
+    <None Remove="Assets\pbrShader.hlsl" />
+    <None Remove="Assets\Phone.hlsl" />
+    <None Remove="Assets\Phone_v001.glb" />
     <None Remove="Assets\ScatteredClouds.hdr" />
     <None Remove="Assets\TouchMenuDiffuse.png" />
     <None Remove="Assets\TouchMenuMRAO.png" />
-    <None Remove="Assets\TouchPanelShader.hlsl" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="Assets\Container_Env.hdr">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Assets\Courtyard.hdr">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Assets\Phone_v001.glb">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="Assets\Panel_v001.glb">
@@ -38,7 +48,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <SKShader Include="Assets\TouchPanelShader.hlsl" />
+    <SKShader Include="Assets\pbrShader.hlsl" />
+    <SKShader Include="Assets\Phone.hlsl" />
+    <SKShader Include="Assets\Panel.hlsl" />
     <SKShader Include="Assets\floor.hlsl" />
   </ItemGroup>
 
@@ -47,7 +59,15 @@
   </ItemGroup>
 
   <ItemGroup>
-    <UpToDateCheckInput Remove="Assets\TouchPanelShader.hlsl" />
+    <UpToDateCheckInput Remove="Assets\Panel.hlsl" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <UpToDateCheckInput Remove="Assets\Phone.hlsl" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <UpToDateCheckInput Remove="Assets\pbrShader.hlsl" />
   </ItemGroup>
 
 </Project>

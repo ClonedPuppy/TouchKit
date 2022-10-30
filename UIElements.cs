@@ -56,16 +56,20 @@ namespace TouchMenuApp
         Vec4 buttonAlbedo;
         Vec4 activeColor;
         float buttonRough;
+        string panelName;
         
         public Dictionary<string, float> buttonStates;
 
         // Constructor
-        public UIElements()
+        public UIElements(string _panelName)
         {
-            panelMaterial = new Material(Shader.FromFile("TouchPanelShader.hlsl"));
-            panel = Model.FromFile("Panel_v001.glb");
+            panelName = _panelName;
+            panelMaterial = new Material(Shader.FromFile(panelName +".hlsl"));
+            panel = Model.FromFile(panelName + "_v001.glb");
             panelMaterial[MatParamName.DiffuseTex] = panel.Visuals[0].Material.GetTexture("diffuse");
+            panelMaterial[MatParamName.OcclusionTex] = panel.Visuals[0].Material.GetTexture("occlusion");
             panelMaterial[MatParamName.MetalTex] = panel.Visuals[0].Material.GetTexture("metal");
+            panelMaterial[MatParamName.ColorTint] = panel.Visuals[0].Material.GetFloat("color");
             panelMaterial[MatParamName.MetallicAmount] = panel.Visuals[0].Material.GetFloat("metallic");
             panelMaterial[MatParamName.RoughnessAmount] = panel.Visuals[0].Material.GetFloat("roughness");
             panel.Visuals[0].Material = panelMaterial;
@@ -171,9 +175,9 @@ namespace TouchMenuApp
             }
         }
         
-        public void DrawUI(int _no)
+        public void DrawUI()
         {
-            UI.Handle("Panel" + _no, ref panelPose, panel.Bounds);
+            UI.Handle(panelName + "Panel", ref panelPose, panel.Bounds);
             panel.Draw(panelPose.ToMatrix());
 
             Hierarchy.Push(panelPose.ToMatrix());
@@ -228,7 +232,7 @@ namespace TouchMenuApp
             var _label = panel.FindNode(_nodeName).Info.Get("label");
 
             UI.PushSurface(node);
-            UI.WindowBegin(_nodeName + "Win", ref ghostVolumePose, UIWin.Empty);
+            UI.WindowBegin(_nodeName + panelName + "Win", ref ghostVolumePose, UIWin.Empty);
             UI.ButtonBehavior(
                 ghostVolume.Bounds.dimensions.XZ.XY0 / 2,
                 ghostVolume.Bounds.dimensions.XZ,
@@ -259,7 +263,7 @@ namespace TouchMenuApp
             var _label = panel.FindNode(_nodeName).Info.Get("label");
 
             UI.PushSurface(node);
-            UI.WindowBegin(_nodeName + "Win", ref ghostVolumePose, UIWin.Empty);
+            UI.WindowBegin(_nodeName + panelName + "Win", ref ghostVolumePose, UIWin.Empty);
             UI.ButtonBehavior(
                 ghostVolume.Bounds.dimensions.XZ.XY0 / 2,
                 ghostVolume.Bounds.dimensions.XZ,
@@ -285,7 +289,7 @@ namespace TouchMenuApp
             Vec3 volumeAt = new Vec3(0, 0, 0);
             Vec3 volumeSize = new Vec3(0.065f, 0.01f, 0.01f);
 
-            BtnState volumeState = UI.VolumeAt(_nodeName + "HVolume", new Bounds(volumeAt, volumeSize), UIConfirm.Push, out Handed hand);
+            BtnState volumeState = UI.VolumeAt(_nodeName + panelName + "HVolume", new Bounds(volumeAt, volumeSize), UIConfirm.Pinch, out Handed hand);
             if (volumeState != BtnState.Inactive)
             {
                 var result = System.Math.Clamp(Remap(Hierarchy.ToLocal(Input.Hand(hand)[FingerId.Index, JointId.Tip].Pose).position.x, -0.03f, 0.028f, 0.1f, 0.001f), 0, 0.2f);
@@ -305,7 +309,7 @@ namespace TouchMenuApp
             Vec3 volumeAt = new Vec3(0, 0, 0);
             Vec3 volumeSize = new Vec3(0.01f, 0.01f, 0.065f);
 
-            BtnState volumeState = UI.VolumeAt(_nodeName + "VVolume", new Bounds(volumeAt, volumeSize), UIConfirm.Push, out Handed hand);
+            BtnState volumeState = UI.VolumeAt(_nodeName + panelName + "VVolume", new Bounds(volumeAt, volumeSize), UIConfirm.Pinch, out Handed hand);
             if (volumeState != BtnState.Inactive)
             {
                 var result = System.Math.Clamp(Remap(Hierarchy.ToLocal(Input.Hand(hand)[FingerId.Index, JointId.Tip].Pose).position.z, 0.03f, -0.028f, 0.11f, 0.001f), 0.001f, 0.11f);
