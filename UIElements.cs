@@ -1,5 +1,6 @@
 ﻿using StereoKit;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
 
@@ -49,11 +50,14 @@ namespace TouchMenuApp
         Mesh ghostVolume;
 
         double interval;
+        double buttonDelay;
         double interValTime;
 
         Vec4 buttonAlbedo;
         Vec4 activeColor;
         float buttonRough;
+        
+        public Dictionary<string, float> buttonStates;
 
         // Constructor
         public UIElements()
@@ -67,17 +71,13 @@ namespace TouchMenuApp
             panel.Visuals[0].Material = panelMaterial;
             panelMaterial.Transparency = Transparency.Blend;
 
-            var errt = panel.Visuals[0].Material.GetAllParamInfo();
-
-            foreach (var item in errt)
-            {
-                Console.WriteLine(item.name.ToString() + ": " + item.type.ToString());
-            }
-
             ghostVolumePose = new Pose(V.XYZ(0, -0.01f, 0), Quat.FromAngles(90, 0, 0));
             ghostVolume = Mesh.GenerateCube(new Vec3(0.01f, 0.01f, 0.01f));
 
+            buttonStates = new Dictionary<string, float>();
+
             interval = 0.1d;
+            buttonDelay = 0.01d;
             interValTime = Time.Total + interval;
 
             // Is the panel landscape or portrait?
@@ -107,7 +107,7 @@ namespace TouchMenuApp
                     var _a = float.Parse(_tempString[3]);
                     buttonAlbedo = new Vec4(_r, _g, _b, _a);
 
-                    Console.WriteLine("buttonAlbedo: " + buttonAlbedo.ToString());
+                    //Console.WriteLine("buttonAlbedo: " + buttonAlbedo.ToString());
 
                     _tempString = item.Info.Get("activeColor").Split(new char[] { '[', ']', ',' }, StringSplitOptions.RemoveEmptyEntries);
                     _r = float.Parse(_tempString[0]);
@@ -119,15 +119,30 @@ namespace TouchMenuApp
 
                     activeColor = new Vec4(_r, _g, _b, _a);
 
-                    Console.WriteLine("activeColor: " + activeColor.ToString());
+                    //Console.WriteLine("activeColor: " + activeColor.ToString());
 
                     buttonRough = float.Parse(item.Info.Get("roughness"));
 
-                    Console.WriteLine("roughness: " + buttonRough.ToString());
+                    //Console.WriteLine("roughness: " + buttonRough.ToString());
 
                 }
                 else if (item.Info.Get("type") == "button")
                 {
+                    if (!buttonStates.ContainsKey(item.Info.Get("label")))
+                    {
+                        buttonStates.Add(item.Info.Get("label"), 0f);
+                    }
+
+                    buttons.button[buttonCounter] = new Vec4(_positionX, _positionY, 0, 0);
+                    buttonCounter++;
+                }
+                else if (item.Info.Get("type") == "togglebutton")
+                {
+                    if (!buttonStates.ContainsKey(item.Info.Get("label")))
+                    {
+                        buttonStates.Add(item.Info.Get("label"), 0f);
+                    }
+
                     buttons.button[buttonCounter] = new Vec4(_positionX, _positionY, 0, 0);
                     buttonCounter++;
                 }
@@ -155,10 +170,10 @@ namespace TouchMenuApp
                 panelMaterial.SetFloat("buttonRough", buttonRough);
             }
         }
-
-        public void DrawUI()
+        
+        public void DrawUI(int _no)
         {
-            UI.Handle("Panel", ref panelPose, panel.Bounds);
+            UI.Handle("Panel" + _no, ref panelPose, panel.Bounds);
             panel.Draw(panelPose.ToMatrix());
 
             Hierarchy.Push(panelPose.ToMatrix());
@@ -168,20 +183,29 @@ namespace TouchMenuApp
             {
                 if (item.Name != "panel")
                 {
+                    
                     if (item.Info.Get("type") == "button")
                     {
                         Button(panel, item.Name);
                     }
+                    else if (item.Info.Get("type") == "togglebutton")
+                    {
+                        ToggleButton(panel, item.Name);
+                    }
                     else if (item.Info.Get("type") == "hslider")
                     {
+                        var _label = item.Info.Get("label");
                         var value = sliderValues.sliderValue[hSliderCounter].x;
                         sliderValues.sliderValue[hSliderCounter].x = HSlider(panel, item.Name, value);
+                        buttonStates[_label] = System.Math.Clamp(Remap(value, 0, 0.109f, 1, 0), 0, 1);
                         hSliderCounter++;
                     }
                     else if (item.Info.Get("type") == "vslider")
                     {
+                        var _label = item.Info.Get("label");
                         var value = sliderValues.sliderValue[vSliderCounter].x;
                         sliderValues.sliderValue[vSliderCounter].x = VSlider(panel, item.Name, value);
+                        buttonStates[_label] = System.Math.Clamp(Remap(value, 0.11f, 0.001f, 0, 1), 0, 1);
                         vSliderCounter++;
                     }
                 }
@@ -200,7 +224,9 @@ namespace TouchMenuApp
         void Button(Model _model, string _nodeName)
         {
             node = _model.FindNode(_nodeName).ModelTransform.Pose;
-            
+            //var _sticky = false;
+            var _label = panel.FindNode(_nodeName).Info.Get("label");
+
             UI.PushSurface(node);
             UI.WindowBegin(_nodeName + "Win", ref ghostVolumePose, UIWin.Empty);
             UI.ButtonBehavior(
@@ -215,35 +241,40 @@ namespace TouchMenuApp
 
             if ((state & BtnState.JustActive) > 0)
             {
-                //buttonStates[_nodeName] = buttonStates[_nodeName] == true ? false : true;
-                //interValTime = Time.Total + interval;
-                //if (buttonStates[_nodeName] == true)
-                //{
-                //    //System.Console.WriteLine(_nodeName.ToString() + " Pressed");
-                //    //Assets.surfaceTopMat.SetFloat(_nodeName, 1);
-                //    //if (nodeName == "Play")
-                //    //{
-                //    //    buttonStates["Stop"] = false;
-                //    //    Assets.surfaceTopMat.SetFloat("Stop", 0);
-                //    //}
-                //    //else
-                //    //{
-                //    //    buttonStates["Play"] = false;
-                //    //    Assets.surfaceTopMat.SetFloat("Play", 0);
-                //    //}
-                //}
-                //else
-                //{
-                //    //Assets.surfaceTopMat.SetFloat(_nodeName, 0);
-                //}
+                interValTime = Time.Total + buttonDelay;
+                buttonStates[_label] = 1;
             }
+            
+            if (buttonStates[_label] == 1 & Time.Total > interValTime)
+            {
+                buttonStates[_label] = 0;
+                interValTime += buttonDelay;
+            }
+        }
 
-            //if (!_sticky & buttonStates[_nodeName] == true & Time.Total > interValTime)
-            //{
-            //    buttonStates[_nodeName] = false;
-            //    //Assets.surfaceTopMat.SetFloat(_nodeName, 0);
-            //    interValTime += interval;
-            //}
+        void ToggleButton(Model _model, string _nodeName)
+        {
+            node = _model.FindNode(_nodeName).ModelTransform.Pose;
+            //var _sticky = false;
+            var _label = panel.FindNode(_nodeName).Info.Get("label");
+
+            UI.PushSurface(node);
+            UI.WindowBegin(_nodeName + "Win", ref ghostVolumePose, UIWin.Empty);
+            UI.ButtonBehavior(
+                ghostVolume.Bounds.dimensions.XZ.XY0 / 2,
+                ghostVolume.Bounds.dimensions.XZ,
+                _nodeName,
+                out float finger,
+                out BtnState state,
+                out BtnState focus);
+            UI.WindowEnd();
+            UI.PopSurface();
+
+            if ((state & BtnState.JustActive) > 0)
+            {
+                buttonStates[_label] = buttonStates[_label] == 1 ? 0 : 1;
+                interValTime = Time.Total + buttonDelay;
+            }
         }
 
         float HSlider(Model _model, string _nodeName, float currentValue)
