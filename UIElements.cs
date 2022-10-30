@@ -69,7 +69,7 @@ namespace TouchMenuApp
             panelMaterial[MatParamName.DiffuseTex] = panel.Visuals[0].Material.GetTexture("diffuse");
             panelMaterial[MatParamName.OcclusionTex] = panel.Visuals[0].Material.GetTexture("occlusion");
             panelMaterial[MatParamName.MetalTex] = panel.Visuals[0].Material.GetTexture("metal");
-            panelMaterial[MatParamName.ColorTint] = panel.Visuals[0].Material.GetFloat("color");
+            panelMaterial[MatParamName.ColorTint] = panel.Visuals[0].Material.GetVector4("color");
             panelMaterial[MatParamName.MetallicAmount] = panel.Visuals[0].Material.GetFloat("metallic");
             panelMaterial[MatParamName.RoughnessAmount] = panel.Visuals[0].Material.GetFloat("roughness");
             panel.Visuals[0].Material = panelMaterial;
