@@ -1,5 +1,4 @@
 ﻿using StereoKit;
-using System.Collections.Generic;
 
 namespace TouchMenuApp
 {
@@ -9,7 +8,7 @@ namespace TouchMenuApp
         {
             appName = "TouchMenu",
             assetsFolder = "Assets",
-            displayPreference = DisplayMode.MixedReality
+            displayPreference = DisplayMode.Flatscreen
         };
 
         UIElements uiElements;
@@ -27,7 +26,7 @@ namespace TouchMenuApp
 
             uiElements = new UIElements("Panel");
 
-            uiPhone = new UIElements("Phone");
+            //uiPhone = new UIElements("Phone");
 
             floorMaterial = new Material(Shader.FromFile("floor.hlsl"));
             floorMaterial.Transparency = Transparency.Blend;

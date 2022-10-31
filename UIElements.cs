@@ -8,6 +8,7 @@ namespace TouchMenuApp
 {
     class UIElements
     {
+        // Declare structs to be sent to shader
         [StructLayout(LayoutKind.Sequential)]
         struct ButtonData
         {
@@ -35,7 +36,8 @@ namespace TouchMenuApp
             [MarshalAs(UnmanagedType.ByValArray, SizeConst = 20)]
             public Vec4[] sliderValue;
         }
-        
+
+        // Declare variables
         Model panel;
         Material panelMaterial;
         Pose panelPose = new Pose(0, 0, -0.4f, Quat.FromAngles(-90, 180, 0));
@@ -60,12 +62,16 @@ namespace TouchMenuApp
         
         public Dictionary<string, float> buttonStates;
 
-        // Constructor
+        // Constructor, requires a panel name, remember the gltf and hlsl files in /Assets need to use this name as well
         public UIElements(string _panelName)
         {
             panelName = _panelName;
+
+            // Load the panel model and material
             panelMaterial = new Material(Shader.FromFile(panelName +".hlsl"));
             panel = Model.FromFile(panelName + "_v001.glb");
+            
+            // Transfer material parameters from loaded model to the custom material
             panelMaterial[MatParamName.DiffuseTex] = panel.Visuals[0].Material.GetTexture("diffuse");
             panelMaterial[MatParamName.OcclusionTex] = panel.Visuals[0].Material.GetTexture("occlusion");
             panelMaterial[MatParamName.MetalTex] = panel.Visuals[0].Material.GetTexture("metal");
@@ -75,28 +81,34 @@ namespace TouchMenuApp
             panel.Visuals[0].Material = panelMaterial;
             panelMaterial.Transparency = Transparency.Blend;
 
+            // A invisible mesh to be used as a manipulation volume for the various UI elements
             ghostVolumePose = new Pose(V.XYZ(0, -0.01f, 0), Quat.FromAngles(90, 0, 0));
             ghostVolume = Mesh.GenerateCube(new Vec3(0.01f, 0.01f, 0.01f));
 
+            // Holds all the current button states
             buttonStates = new Dictionary<string, float>();
 
+            // Timer stuff
             interval = 0.1d;
             buttonDelay = 0.01d;
             interValTime = Time.Total + interval;
 
-            // Is the panel landscape or portrait?
+            // Check if the panel is a landscape or portrait aspect
             float longestSide = FindLongestSide(panel);
 
+            // Initialize the arrays with default values (increase these if more buttons/sliders are needed)
             buttons.button = new Vec4[20];
             hSliders.hSlider = new Vec4[10];
             vSliders.vSlider = new Vec4[10];
             sliderValues.sliderValue = new Vec4[20];
 
-            // Parse out the UI elements in the panel gltf file
+            // Parse out the UI elements embedded in the specified gltf file
             var buttonCounter  = 0;
             var hSliderCounter = 0;
             var vSliderCounter = 0;
 
+            //Console.WriteLine(panel.Nodes.Count);
+            
             foreach (var item in panel.Nodes)
             {
                 float _positionX = (item.LocalTransform.Pose.position.x + (panel.Bounds.dimensions.x / 2)) / longestSide;
@@ -111,8 +123,6 @@ namespace TouchMenuApp
                     var _a = float.Parse(_tempString[3]);
                     buttonAlbedo = new Vec4(_r, _g, _b, _a);
 
-                    //Console.WriteLine("buttonAlbedo: " + buttonAlbedo.ToString());
-
                     _tempString = item.Info.Get("activeColor").Split(new char[] { '[', ']', ',' }, StringSplitOptions.RemoveEmptyEntries);
                     _r = float.Parse(_tempString[0]);
                     _g = float.Parse(_tempString[1]);
@@ -123,12 +133,7 @@ namespace TouchMenuApp
 
                     activeColor = new Vec4(_r, _g, _b, _a);
 
-                    //Console.WriteLine("activeColor: " + activeColor.ToString());
-
                     buttonRough = float.Parse(item.Info.Get("roughness"));
-
-                    //Console.WriteLine("roughness: " + buttonRough.ToString());
-
                 }
                 else if (item.Info.Get("type") == "button")
                 {
@@ -152,15 +157,22 @@ namespace TouchMenuApp
                 }
                 else if (item.Info.Get("type") == "hslider")
                 {
+                    //Console.WriteLine("hslider value: " + item.Info.Get("defState").ToString());
+                    var defValue = System.Math.Clamp(Remap(float.Parse(item.Info.Get("defState")), 0, 1, 0, 0.109f), 0, 1);
                     hSliders.hSlider[hSliderCounter] = new Vec4(_positionX, _positionY, 0, 0);
+                    sliderValues.sliderValue[hSliderCounter] = new Vec4(defValue, 0, 0, 0);
                     hSliderCounter++;
                 }
                 else if (item.Info.Get("type") == "vslider")
                 {
+                    //Console.WriteLine("vslider value: " + item.Info.Get("defState").ToString());
+                    var defValue = System.Math.Clamp(Remap(float.Parse(item.Info.Get("defState")), 0, 1, 0.11f, 0.001f), 0, 1);
+                    //Console.WriteLine(defValue.ToString());
                     vSliders.vSlider[vSliderCounter] = new Vec4(_positionX, _positionY, 0, 0);
+                    sliderValues.sliderValue[vSliderCounter +9] = new Vec4(defValue, 0, 0, 0);
                     vSliderCounter++;
                 }
-
+                
                 // Send UI element setup data to the shader
                 panelMaterial.SetInt("buttonAmount", buttonCounter);
                 panelMaterial.SetInt("hSliderAmount", hSliderCounter);
@@ -173,13 +185,20 @@ namespace TouchMenuApp
                 panelMaterial.SetVector("activeColor", activeColor);
                 panelMaterial.SetFloat("buttonRough", buttonRough);
             }
+
+            for (int i = 0; i < sliderValues.sliderValue.Length; i++)
+            {
+                Console.WriteLine(sliderValues.sliderValue[i].x.ToString());
+            }
         }
         
         public void DrawUI()
         {
+            // Draw the panel
             UI.Handle(panelName + "Panel", ref panelPose, panel.Bounds);
             panel.Draw(panelPose.ToMatrix());
 
+            // Now draw the UI elements
             Hierarchy.Push(panelPose.ToMatrix());
             var hSliderCounter = 0;
             var vSliderCounter = 9;
@@ -187,7 +206,6 @@ namespace TouchMenuApp
             {
                 if (item.Name != "panel")
                 {
-                    
                     if (item.Info.Get("type") == "button")
                     {
                         Button(panel, item.Name);
@@ -210,21 +228,23 @@ namespace TouchMenuApp
                         var value = sliderValues.sliderValue[vSliderCounter].x;
                         sliderValues.sliderValue[vSliderCounter].x = VSlider(panel, item.Name, value);
                         buttonStates[_label] = System.Math.Clamp(Remap(value, 0.11f, 0.001f, 0, 1), 0, 1);
+                        //Console.WriteLine("vslider value: " + value.ToString());
                         vSliderCounter++;
                     }
                 }
             }
             Hierarchy.Pop();
 
+            // Send the UI element state data to the shader, it's set to do this at intervals to reduce the amount of data being sent
+            // Change the interval if faster / slower is prefered.
             if (Time.Total > interValTime)
             {
-                // Update the shader with new data derived from button and slider manipulations
                 panelMaterial.SetData<SliderValueData>("sliderValue", sliderValues);
-
                 interValTime = Time.Total + interval;
             }
         }
 
+        // Momentary button
         void Button(Model _model, string _nodeName)
         {
             node = _model.FindNode(_nodeName).ModelTransform.Pose;
@@ -256,6 +276,7 @@ namespace TouchMenuApp
             }
         }
 
+        // Toggle button
         void ToggleButton(Model _model, string _nodeName)
         {
             node = _model.FindNode(_nodeName).ModelTransform.Pose;
@@ -281,6 +302,7 @@ namespace TouchMenuApp
             }
         }
 
+        // Horizontal slider
         float HSlider(Model _model, string _nodeName, float currentValue)
         {
             node = _model.FindNode(_nodeName).ModelTransform.Pose;
@@ -301,6 +323,7 @@ namespace TouchMenuApp
             return currentValue;
         }
 
+        // Vertical slider
         float VSlider(Model _model, string _nodeName, float currentValue)
         {
             node = _model.FindNode(_nodeName).ModelTransform.Pose;
@@ -321,6 +344,7 @@ namespace TouchMenuApp
             return currentValue;
         }
 
+        // Function to find the aspect of the panel model
         float FindLongestSide(Model model)
         {
             if (model.Bounds.dimensions.x < model.Bounds.dimensions.z)
@@ -333,6 +357,7 @@ namespace TouchMenuApp
             }
         }
 
+        // Function to remap a value from one range to another
         float Remap(float from, float fromMin, float fromMax, float toMin, float toMax)
         {
             var fromAbs = from - fromMin; var fromMaxAbs = fromMax - fromMin;
