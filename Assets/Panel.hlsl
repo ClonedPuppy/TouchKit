@@ -141,22 +141,23 @@ float3 drawButton(FingerDist2 fingerInfo, float2 uv, float4 pos, float2 size, fl
 	return float3(result, result, result);
 }
 
-float3 drawHSlider(float2 uv, float4 pos, float range)
+float3 drawHSlider(float2 uv, float4 pos, float value)
 {
 	float2 size = float2(.08, .003);
+	value = value / 10;
 	float d = length(max(abs(uv - float2(pos.x, pos.y)), size) - size) - 0.035;
-	float e = length(max(abs(uv - float2(pos.x - range, pos.y)), float2(size.x - range, size.y)) - float2(size.x - range, size.y)) - 0.025;
+	float e = length(max(abs(uv - float2(pos.x + value, pos.y)), float2(size.x - value, size.y)) - float2(size.x - value, size.y)) - 0.025;
     
 	float result = smoothstep(0.55, 0.45, abs(d / 0.025) * 5.0) + smoothstep(0.66, 0.33, e / 0.025 * 5.0);
 
 	return float3(result, result, result);
 }
 
-float3 drawVSlider(float2 uv, float4 pos, float range)
+float3 drawVSlider(float2 uv, float4 pos, float value)
 {
 	float2 size = float2(.003, .08);
 	float d = length(max(abs(uv - float2(pos.x, pos.y)), size) - size) - 0.035;
-	float e = length(max(abs(uv - float2(pos.x, pos.y + range)), float2(size.x, size.y - range)) - float2(size.x, size.y - range)) - 0.025;
+	float e = length(max(abs(uv - float2(pos.x, pos.y + value)), float2(size.x, size.y - value)) - float2(size.x, size.y - value)) - 0.025;
     
 	float result = smoothstep(0.55, 0.45, abs(d / 0.025) * 5.0) + smoothstep(0.66, 0.33, e / 0.025 * 5.0);
 
@@ -168,7 +169,6 @@ float4 ps(psIn input) : SV_TARGET
 	float4 albedo = diffuse.Sample(diffuse_s, input.uv) * input.color;
 	float3 emissive = emission.Sample(emission_s, input.uv).rgb * emission_factor.rgb;
 	float2 metal_rough = metal.Sample(metal_s, input.uv).gb; // rough is g, b is metallic
-	//float ao = metal.Sample(metal_s, input.uv).r; // occlusion uses the r channel
 	float ao = occlusion.Sample(occlusion_s, input.uv).r; // occlusion is sometimes part of the metal tex, uses r channel
 	
 	FingerDist2 fingerDistance = FingerDistanceInfo2(input.world.xyz, input.normal);
@@ -181,11 +181,6 @@ float4 ps(psIn input) : SV_TARGET
 		buttons += drawDefaultButton(fingerDistance, input.uv, button[i]);
 	}
 	
-	//for (uint i = 0; i < buttonAmount; i++)
-	//{
-	//	buttons += drawButton(fingerDistance, input.uv, button[i], 0.03, 0.005, 0.025);
-	//}
-	
 	for (uint i = 0; i < hSliderAmount; i++)
 	{
 		sliders += drawHSlider(input.uv, hslider[i], sliderValue[i].x);
@@ -196,17 +191,10 @@ float4 ps(psIn input) : SV_TARGET
 		sliders += drawVSlider(input.uv, vslider[i], sliderValue[i + 9].x);
 	}
 	
-	//float metallic_final = metallic;
-	//float rough_final = roughness;
-	
 	float metallic_final = lerp(metal_rough.y * metallic, activeColor.a * buttonAlbedo.a, buttons.r + sliders.r);
 	float rough_final = lerp(metal_rough.x * roughness, buttonRough * buttonAlbedo.a, buttons.r + sliders.r);
 	
 	albedo = float4(lerp(albedo.rgb, buttonAlbedo.rgb, (buttons.rgb + sliders.rgb) * buttonAlbedo.a), albedo.a);
-	
-	//albedo = float4(rough_final.rrr, 1);
-	
-	//albedo = float4(albedo.rgb + ((buttons.rrr + sliders.rrr) * buttonAlbedo.rgb), (albedo.a - (buttons.r + sliders.r)) + buttonAlbedo.a);
 	
 	float4 color = skpbr_shade(albedo, input.irradiance, ao, metallic_final, rough_final, input.view_dir, input.normal);
 	
