@@ -336,7 +336,7 @@ namespace TouchMenuApp
             return currentValue;
         }
 
-        // Function to find the aspect of the panel model
+        // Find the aspect of the panel model
         float FindLongestSide(Model model)
         {
             if (model.Bounds.dimensions.x < model.Bounds.dimensions.z)
@@ -349,7 +349,7 @@ namespace TouchMenuApp
             }
         }
 
-        // Function to remap a value from one range to another
+        // Remap a value from one range to another
         float Remap(float from, float fromMin, float fromMax, float toMin, float toMax)
         {
             var fromAbs = from - fromMin; var fromMaxAbs = fromMax - fromMin;

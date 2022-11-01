@@ -144,9 +144,9 @@ float3 drawButton(FingerDist2 fingerInfo, float2 uv, float4 pos, float2 size, fl
 float3 drawHSlider(float2 uv, float4 pos, float value)
 {
 	float2 size = float2(.08, .003);
-	value = value / 10;
+	value = lerp(0.1, 0.001, value);
 	float d = length(max(abs(uv - float2(pos.x, pos.y)), size) - size) - 0.035;
-	float e = length(max(abs(uv - float2(pos.x + value, pos.y)), float2(size.x - value, size.y)) - float2(size.x - value, size.y)) - 0.025;
+	float e = length(max(abs(uv - float2(pos.x - value, pos.y)), float2(size.x - value, size.y)) - float2(size.x - value, size.y)) - 0.025;
     
 	float result = smoothstep(0.55, 0.45, abs(d / 0.025) * 5.0) + smoothstep(0.66, 0.33, e / 0.025 * 5.0);
 
@@ -156,6 +156,7 @@ float3 drawHSlider(float2 uv, float4 pos, float value)
 float3 drawVSlider(float2 uv, float4 pos, float value)
 {
 	float2 size = float2(.003, .08);
+	value = lerp(0.1, 0.001, value);
 	float d = length(max(abs(uv - float2(pos.x, pos.y)), size) - size) - 0.035;
 	float e = length(max(abs(uv - float2(pos.x, pos.y + value)), float2(size.x, size.y - value)) - float2(size.x, size.y - value)) - 0.025;
     
