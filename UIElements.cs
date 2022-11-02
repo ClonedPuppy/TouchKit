@@ -303,10 +303,10 @@ namespace TouchMenuApp
             Vec3 volumeAt = new Vec3(0, 0, 0);
             Vec3 volumeSize = new Vec3(0.065f, 0.01f, 0.01f);
 
-            BtnState volumeState = UI.VolumeAt(_nodeName + panelName + "HVolume", new Bounds(volumeAt, volumeSize), UIConfirm.Push, out Handed hand);
+            BtnState volumeState = UI.VolumeAt(_nodeName + panelName + "HVolume", new Bounds(volumeAt, volumeSize), UIConfirm.Pinch, out Handed hand);
             if (volumeState != BtnState.Inactive)
             {
-                var result = System.Math.Clamp((Hierarchy.ToLocal(Input.Hand(hand)[FingerId.Index, JointId.Tip].Pose).position.x + 0.03f) * 16f, 0f, 1f);
+                var result = System.Math.Clamp((Hierarchy.ToLocal(Input.Hand(hand).pinchPt).x + 0.03f) * 16f, 0f, 1f);
                 UI.PopSurface();
                 return result;
             }
@@ -324,10 +324,10 @@ namespace TouchMenuApp
             Vec3 volumeAt = new Vec3(0, 0, 0);
             Vec3 volumeSize = new Vec3(0.01f, 0.01f, 0.065f);
             
-            BtnState volumeState = UI.VolumeAt(_nodeName + panelName + "VVolume", new Bounds(volumeAt, volumeSize), UIConfirm.Push, out Handed hand);
+            BtnState volumeState = UI.VolumeAt(_nodeName + panelName + "VVolume", new Bounds(volumeAt, volumeSize), UIConfirm.Pinch, out Handed hand);
             if (volumeState != BtnState.Inactive)
             {
-                var result = System.Math.Clamp((Hierarchy.ToLocal(Input.Hand(hand)[FingerId.Index, JointId.Tip].Pose).position.z - 0.03f) * -16f, 0f, 1f);
+                var result = System.Math.Clamp((Hierarchy.ToLocal(Input.Hand(hand).pinchPt).z - 0.03f) * -16f, 0f, 1f);
                 UI.PopSurface();
                 return result;
             }
@@ -347,17 +347,6 @@ namespace TouchMenuApp
             {
                 return model.Bounds.dimensions.x;
             }
-        }
-
-        // Remap a value from one range to another
-        float Remap(float from, float fromMin, float fromMax, float toMin, float toMax)
-        {
-            var fromAbs = from - fromMin; var fromMaxAbs = fromMax - fromMin;
-            var normal = fromAbs / fromMaxAbs;
-            var toMaxAbs = toMax - toMin; var toAbs = toMaxAbs * normal;
-            var to = toAbs + toMin;
-
-            return to;
         }
     }
 }
