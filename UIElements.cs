@@ -1,6 +1,5 @@
 ﻿using StereoKit;
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
 
@@ -31,21 +30,38 @@ namespace TouchMenuApp
         }
 
         [StructLayout(LayoutKind.Sequential)]
+        struct TabData
+        {
+            [MarshalAs(UnmanagedType.ByValArray, SizeConst = 10)]
+            public Vec4[] tab;
+        }
+
+        [StructLayout(LayoutKind.Sequential)]
         struct SliderValueData
         {
             [MarshalAs(UnmanagedType.ByValArray, SizeConst = 20)]
             public Vec4[] sliderValue;
         }
 
+        [StructLayout(LayoutKind.Sequential)]
+        struct TabValueData
+        {
+            [MarshalAs(UnmanagedType.ByValArray, SizeConst = 10)]
+            public float[] tabValue;
+        }
+        
         // Declare variables
         Model panel;
         Material panelMaterial;
-        Pose panelPose = new Pose(0, 0, -0.4f, Quat.FromAngles(-90, 180, 0));
+        Pose panelPose = new Pose(0, 0.1f, -0.2f, Quat.FromAngles(-90, 180, 0));
 
-        ButtonData buttons = new ButtonData();
-        HsliderData hSliders = new HsliderData();
-        VsliderData vSliders = new VsliderData();
-        SliderValueData sliderValues = new SliderValueData();
+        ButtonData buttons              = new ButtonData();
+        HsliderData hSliders            = new HsliderData();
+        VsliderData vSliders            = new VsliderData();
+        TabData tabs                    = new TabData();
+        
+        SliderValueData sliderValues    = new SliderValueData();
+        TabValueData tabValues          = new TabValueData();
 
         Pose node;
         Pose ghostVolumePose;
@@ -97,15 +113,20 @@ namespace TouchMenuApp
             float longestSide = FindLongestSide(panel);
 
             // Initialize the arrays with default values (increase these if more buttons/sliders are needed)
-            buttons.button = new Vec4[20];
-            hSliders.hSlider = new Vec4[10];
-            vSliders.vSlider = new Vec4[10];
+            buttons.button      = new Vec4[20];
+            tabs.tab            = new Vec4[10];
+            hSliders.hSlider    = new Vec4[10];
+            vSliders.vSlider    = new Vec4[10];
+            
             sliderValues.sliderValue = new Vec4[20];
+            tabValues.tabValue = new float[10];
+
 
             // Parse out the UI elements embedded in the specified gltf file
-            var buttonCounter = 0;
-            var hSliderCounter = 0;
-            var vSliderCounter = 0;
+            var buttonCounter   = 0;
+            var tabCounter      = 0;
+            var hSliderCounter  = 0;
+            var vSliderCounter  = 0;
 
             foreach (var item in panel.Nodes)
             {
@@ -153,6 +174,19 @@ namespace TouchMenuApp
                     buttons.button[buttonCounter] = new Vec4(_positionX, _positionY, 0, 0);
                     buttonCounter++;
                 }
+                else if (item.Info.Get("type") == "tab")
+                {
+                    if (!buttonStates.ContainsKey(item.Info.Get("label")))
+                    {
+                        buttonStates.Add(item.Info.Get("label"), 0f);
+                    }
+
+                    var defValue = float.Parse(item.Info.Get("defState"));
+                    var numberTabs = float.Parse(item.Info.Get("tabs"));
+                    tabs.tab[tabCounter] = new Vec4(_positionX, _positionY, numberTabs, 0);
+                    tabValues.tabValue[tabCounter] = defValue;
+                    tabCounter++;
+                }
                 else if (item.Info.Get("type") == "hslider")
                 {
                     var defValue = float.Parse(item.Info.Get("defState"));
@@ -170,20 +204,20 @@ namespace TouchMenuApp
 
                 // Send UI element setup data to the shader
                 panelMaterial.SetInt("buttonAmount", buttonCounter);
+                panelMaterial.SetInt("tabAmount", tabCounter);
                 panelMaterial.SetInt("hSliderAmount", hSliderCounter);
                 panelMaterial.SetInt("vSliderAmount", vSliderCounter);
                 panelMaterial.SetData<ButtonData>("button", buttons);
+                panelMaterial.SetData<TabData>("tab", tabs);
                 panelMaterial.SetData<HsliderData>("hslider", hSliders);
                 panelMaterial.SetData<VsliderData>("vslider", vSliders);
-                panelMaterial.SetData<SliderValueData>("sliderValue", sliderValues);
                 panelMaterial.SetVector("buttonAlbedo", buttonAlbedo);
                 panelMaterial.SetVector("activeColor", activeColor);
                 panelMaterial.SetFloat("buttonRough", buttonRough);
-            }
 
-            for (int i = 0; i < sliderValues.sliderValue.Length; i++)
-            {
-                Console.WriteLine(sliderValues.sliderValue[i].x.ToString());
+                // Constantly updating shader parameters
+                panelMaterial.SetData<SliderValueData>("sliderValue", sliderValues);
+                panelMaterial.SetData<TabValueData>("tabValues", tabValues);
             }
         }
 
@@ -209,20 +243,18 @@ namespace TouchMenuApp
                     {
                         ToggleButton(panel, item.Name);
                     }
+                    else if (item.Info.Get("type") == "tab")
+                    {
+                        Tab(panel, item.Name);
+                    }
                     else if (item.Info.Get("type") == "hslider")
                     {
-                        var _label = item.Info.Get("label");
-                        var value = sliderValues.sliderValue[hSliderCounter].x;
-                        sliderValues.sliderValue[hSliderCounter].x = HSlider(panel, item.Name, value);
-                        buttonStates[_label] = value;
+                        sliderValues.sliderValue[hSliderCounter].x = HSlider(panel, item.Name, sliderValues.sliderValue[hSliderCounter].x);
                         hSliderCounter++;
                     }
                     else if (item.Info.Get("type") == "vslider")
                     {
-                        var _label = item.Info.Get("label");
-                        var value = sliderValues.sliderValue[vSliderCounter].x;
-                        sliderValues.sliderValue[vSliderCounter].x = VSlider(panel, item.Name, value);
-                        buttonStates[_label] = value;
+                        sliderValues.sliderValue[vSliderCounter].x = VSlider(panel, item.Name, sliderValues.sliderValue[vSliderCounter].x);
                         vSliderCounter++;
                     }
                 }
@@ -294,10 +326,35 @@ namespace TouchMenuApp
             }
         }
 
+        void Tab(Model _model, string _nodeName)
+        {
+            node = _model.FindNode(_nodeName).ModelTransform.Pose;
+            var _label = panel.FindNode(_nodeName).Info.Get("label");
+
+            UI.PushSurface(node);
+            UI.WindowBegin(_nodeName + panelName + "Win", ref ghostVolumePose, UIWin.Empty);
+            UI.ButtonBehavior(
+                ghostVolume.Bounds.dimensions.XZ.XY0 / 2,
+                ghostVolume.Bounds.dimensions.XZ,
+                _nodeName,
+                out float finger,
+                out BtnState state,
+                out BtnState focus);
+            UI.WindowEnd();
+            UI.PopSurface();
+            
+            //if ((state & BtnState.JustActive) > 0)
+            //{
+            //    buttonStates[_label] = buttonStates[_label] == 1 ? 0 : 1;
+            //    interValTime = Time.Total + buttonDelay;
+            //}
+        }
+
         // Horizontal slider
         float HSlider(Model _model, string _nodeName, float currentValue)
         {
             node = _model.FindNode(_nodeName).ModelTransform.Pose;
+            var _label = _model.FindNode(_nodeName).Info.Get("label");
 
             UI.PushSurface(node);
             Vec3 volumeAt = new Vec3(0, 0, 0);
@@ -307,6 +364,7 @@ namespace TouchMenuApp
             if (volumeState != BtnState.Inactive)
             {
                 var result = System.Math.Clamp((Hierarchy.ToLocal(Input.Hand(hand).pinchPt).x + 0.03f) * 16f, 0f, 1f);
+                buttonStates[_label] = result;
                 UI.PopSurface();
                 return result;
             }
@@ -319,6 +377,7 @@ namespace TouchMenuApp
         float VSlider(Model _model, string _nodeName, float currentValue)
         {
             node = _model.FindNode(_nodeName).ModelTransform.Pose;
+            var _label = _model.FindNode(_nodeName).Info.Get("label");
 
             UI.PushSurface(node);
             Vec3 volumeAt = new Vec3(0, 0, 0);
@@ -328,6 +387,7 @@ namespace TouchMenuApp
             if (volumeState != BtnState.Inactive)
             {
                 var result = System.Math.Clamp((Hierarchy.ToLocal(Input.Hand(hand).pinchPt).z - 0.03f) * -16f, 0f, 1f);
+                buttonStates[_label] = result;
                 UI.PopSurface();
                 return result;
             }

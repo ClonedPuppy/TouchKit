@@ -18,6 +18,7 @@ float roughness;
 //--uScale					= 1
 //--vScale					= 1
 //--buttonAmount			= 1
+//--tabAmount				= 5
 //--sliderAmount			= 1
 //--buttonAlbedo			= 1, 1, 1, 1
 //--activeColor				= 0, 0, 0, 0,
@@ -28,6 +29,7 @@ float uvYoffset;
 float uScale;
 float vScale;
 int buttonAmount;
+int tabAmount;
 int hSliderAmount;
 int vSliderAmount;
 float4 buttonAlbedo;
@@ -51,9 +53,11 @@ Texture2D occlusion : register(t4);
 SamplerState occlusion_s : register(s4);
 
 float4 button[20];
+float4 tab[10];
 float4 hslider[10];
 float4 vslider[10];
 float4 sliderValue[20];
+float tabValues[10];
 
 struct vsIn
 {
@@ -174,28 +178,32 @@ float4 ps(psIn input) : SV_TARGET
 	
 	FingerDist2 fingerDistance = FingerDistanceInfo2(input.world.xyz, input.normal);
 	
-	float3 buttons = float3(0, 0, 0);
-	float3 sliders = float3(0, 0, 0);
+	float3 uiElements = float3(0, 0, 0);
 	
 	for (uint i = 0; i < buttonAmount; i++)
 	{
-		buttons += drawDefaultButton(fingerDistance, input.uv, button[i]);
+		uiElements += drawDefaultButton(fingerDistance, input.uv, button[i]);
+	}
+	
+	for (uint i = 0; i < tabAmount; i++)
+	{
+		uiElements += drawDefaultButton(fingerDistance, input.uv, tab[i]);
 	}
 	
 	for (uint i = 0; i < hSliderAmount; i++)
 	{
-		sliders += drawHSlider(input.uv, hslider[i], sliderValue[i].x);
+		uiElements += drawHSlider(input.uv, hslider[i], sliderValue[i].x);
 	}
 	
 	for (uint i = 0; i < vSliderAmount; i++)
 	{
-		sliders += drawVSlider(input.uv, vslider[i], sliderValue[i + 9].x);
+		uiElements += drawVSlider(input.uv, vslider[i], sliderValue[i + 9].x);
 	}
 	
-	float metallic_final = lerp(metal_rough.y * metallic, activeColor.a * buttonAlbedo.a, buttons.r + sliders.r);
-	float rough_final = lerp(metal_rough.x * roughness, buttonRough * buttonAlbedo.a, buttons.r + sliders.r);
+	float metallic_final = lerp(metal_rough.y * metallic, activeColor.a * buttonAlbedo.a, uiElements.r);
+	float rough_final = lerp(metal_rough.x * roughness, buttonRough * buttonAlbedo.a, uiElements.r);
 	
-	albedo = float4(lerp(albedo.rgb, buttonAlbedo.rgb, (buttons.rgb + sliders.rgb) * buttonAlbedo.a), albedo.a);
+	albedo = float4(lerp(albedo.rgb, buttonAlbedo.rgb, (uiElements.rgb) * buttonAlbedo.a), albedo.a);
 	
 	float4 color = skpbr_shade(albedo, input.irradiance, ao, metallic_final, rough_final, input.view_dir, input.normal);
 	
