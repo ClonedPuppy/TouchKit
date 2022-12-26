@@ -19,9 +19,10 @@ float roughness;
 //--vScale					= 1
 //--buttonAmount			= 1
 //--tabAmount				= 5
-//--sliderAmount			= 1
+//--hSliderAmount			= 1
+//--vSliderAmount			= 1
 //--buttonAlbedo			= 1, 1, 1, 1
-//--activeColor				= 0, 0, 0, 0,
+//--activeColor				= 0, 0, 0, 0
 //--buttonRough				= 0
 float tex_scale;
 float uvXoffset;
