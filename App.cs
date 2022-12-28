@@ -12,25 +12,22 @@ namespace TouchMenuApp
         };
 
         UIElements uiElements;
+        TestPanel testPanel;
 
         Matrix floorTransform = Matrix.TS(new Vec3(0, -1.5f, 0), new Vec3(30, 0.1f, 30));
         Material floorMaterial;
         
         public void Init()
         {
-            Renderer.SkyTex = Tex.FromCubemapEquirectangular("Courtyard.hdr", out SphericalHarmonics lighting);
+            Renderer.SkyTex = Tex.FromCubemapEquirectangular("Container_Env.hdr", out SphericalHarmonics lighting);
             Renderer.SkyLight = lighting;
             Renderer.EnableSky = true;
 
             uiElements = new UIElements("Panel");
+            testPanel = new TestPanel();
 
             floorMaterial = new Material(Shader.FromFile("floor.hlsl"));
             floorMaterial.Transparency = Transparency.Blend;
-
-            if (SK.ActiveDisplayMode == DisplayMode.Flatscreen)
-            {
-                //Renderer.CameraRoot = Matrix.TR(V.XYZ(0, 0.5f, 0.185f), Quat.FromAngles(-69, 0, 0));
-            }
         }
 
         public void Step()
@@ -40,13 +37,7 @@ namespace TouchMenuApp
 
             uiElements.DrawUI();
 
-            if (uiElements.buttonStates.Count > 0)
-            {
-                foreach (var pair in uiElements.buttonStates)
-                {
-                    System.Console.WriteLine(pair.Value);
-                }
-            }
+            testPanel.DrawTestPanel();
         }
     }
 }

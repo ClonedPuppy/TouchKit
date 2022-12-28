@@ -76,9 +76,10 @@ namespace TouchMenuApp
         float buttonRough;
         string panelName;
 
-        public Dictionary<string, float> buttonStates;
+        // Holds all the current button states, access this for button states.
+        public static Dictionary<string, float> buttonStates;
 
-        // Constructor, requires a panel name, remember the gltf and hlsl files in /Assets need to use this name as well
+        // Constructor, requires a panel name. Both the gltf and hlsl files in /Assets need to use this name as well
         public UIElements(string _panelName)
         {
             panelName = _panelName;
@@ -101,7 +102,6 @@ namespace TouchMenuApp
             ghostVolumePose = new Pose(V.XYZ(0, -0.01f, 0), Quat.FromAngles(90, 0, 0));
             ghostVolume = Mesh.GenerateCube(new Vec3(0.01f, 0.01f, 0.01f));
 
-            // Holds all the current button states
             buttonStates = new Dictionary<string, float>();
 
             // Timer stuff
@@ -120,7 +120,6 @@ namespace TouchMenuApp
             
             sliderValues.sliderValue = new Vec4[20];
             tabValues.tabValue = new float[10];
-
 
             // Parse out the UI elements embedded in the specified gltf file
             var buttonCounter   = 0;
@@ -158,7 +157,7 @@ namespace TouchMenuApp
                 {
                     if (!buttonStates.ContainsKey(item.Info.Get("label")))
                     {
-                        buttonStates.Add(item.Info.Get("label"), 0f);
+                        buttonStates.Add(item.Info.Get("label"), float.Parse(item.Info.Get("defState")));
                     }
 
                     buttons.button[buttonCounter] = new Vec4(_positionX, _positionY, 0, 0);
@@ -168,7 +167,7 @@ namespace TouchMenuApp
                 {
                     if (!buttonStates.ContainsKey(item.Info.Get("label")))
                     {
-                        buttonStates.Add(item.Info.Get("label"), 0f);
+                        buttonStates.Add(item.Info.Get("label"), float.Parse(item.Info.Get("defState")));
                     }
 
                     buttons.button[buttonCounter] = new Vec4(_positionX, _positionY, 0, 0);
@@ -178,7 +177,7 @@ namespace TouchMenuApp
                 {
                     if (!buttonStates.ContainsKey(item.Info.Get("label")))
                     {
-                        buttonStates.Add(item.Info.Get("label"), 0f);
+                        buttonStates.Add(item.Info.Get("label"), float.Parse(item.Info.Get("defState")));
                     }
 
                     var defValue = float.Parse(item.Info.Get("defState"));
@@ -189,6 +188,11 @@ namespace TouchMenuApp
                 }
                 else if (item.Info.Get("type") == "hslider")
                 {
+                    if (!buttonStates.ContainsKey(item.Info.Get("label")))
+                    {
+                        buttonStates.Add(item.Info.Get("label"), float.Parse(item.Info.Get("defState")));
+                    }
+
                     var defValue = float.Parse(item.Info.Get("defState"));
                     hSliders.hSlider[hSliderCounter] = new Vec4(_positionX, _positionY, 0, 0);
                     sliderValues.sliderValue[hSliderCounter] = new Vec4(defValue, 0, 0, 0);
@@ -196,13 +200,18 @@ namespace TouchMenuApp
                 }
                 else if (item.Info.Get("type") == "vslider")
                 {
+                    if (!buttonStates.ContainsKey(item.Info.Get("label")))
+                    {
+                        buttonStates.Add(item.Info.Get("label"), float.Parse(item.Info.Get("defState")));
+                    }
+
                     var defValue = float.Parse(item.Info.Get("defState"));
                     vSliders.vSlider[vSliderCounter] = new Vec4(_positionX, _positionY, 0, 0);
                     sliderValues.sliderValue[vSliderCounter + 9] = new Vec4(defValue, 0, 0, 0);
                     vSliderCounter++;
                 }
 
-                // Send UI element setup data to the shader
+                // A one time send to the shader to initialize the elements
                 panelMaterial.SetInt("buttonAmount", buttonCounter);
                 panelMaterial.SetInt("tabAmount", tabCounter);
                 panelMaterial.SetInt("hSliderAmount", hSliderCounter);
@@ -262,7 +271,7 @@ namespace TouchMenuApp
             Hierarchy.Pop();
 
             // Send the UI element state data to the shader, it's set to do this at intervals to reduce the amount of data being sent
-            // Change the interval if faster / slower is prefered.
+            // Change the interval for smoother slider updates on the UI element
             if (Time.Total > interValTime)
             {
                 panelMaterial.SetData<SliderValueData>("sliderValue", sliderValues);
@@ -288,6 +297,7 @@ namespace TouchMenuApp
             UI.WindowEnd();
             UI.PopSurface();
 
+            // Holding the momentary button slightly to make sure it's picked up from wherever it's accessed.
             if ((state & BtnState.JustActive) > 0)
             {
                 interValTime = Time.Total + buttonDelay;
