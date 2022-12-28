@@ -8,13 +8,11 @@ namespace TouchMenuApp
         {
             appName = "TouchMenu",
             assetsFolder = "Assets",
-            displayPreference = DisplayMode.MixedReality
+            displayPreference = DisplayMode.Flatscreen
         };
 
         UIElements uiElements;
 
-        UIElements uiPhone;
-        
         Matrix floorTransform = Matrix.TS(new Vec3(0, -1.5f, 0), new Vec3(30, 0.1f, 30));
         Material floorMaterial;
         
@@ -25,8 +23,6 @@ namespace TouchMenuApp
             Renderer.EnableSky = true;
 
             uiElements = new UIElements("Panel");
-
-            //uiPhone = new UIElements("Phone");
 
             floorMaterial = new Material(Shader.FromFile("floor.hlsl"));
             floorMaterial.Transparency = Transparency.Blend;
@@ -44,12 +40,13 @@ namespace TouchMenuApp
 
             uiElements.DrawUI();
 
-            //uiPhone.DrawUI();
-
-            //if (uiElements.buttonStates.Count > 0)
-            //{
-            //    System.Console.WriteLine(uiElements.buttonStates["Y Value"]);
-            //}
+            if (uiElements.buttonStates.Count > 0)
+            {
+                foreach (var pair in uiElements.buttonStates)
+                {
+                    System.Console.WriteLine(pair.Value);
+                }
+            }
         }
     }
 }
