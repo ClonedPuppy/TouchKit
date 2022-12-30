@@ -86,7 +86,7 @@ namespace TouchMenuApp
 
             // Load the panel model and material
             panelMaterial = new Material(Shader.FromFile(panelName + ".hlsl"));
-            panel = Model.FromFile(panelName + "_v001.glb");
+            panel = Model.FromFile(panelName + ".glb", Shader.FromFile(panelName + ".hlsl"));
 
             // Transfer material parameters from loaded model to the custom material
             panelMaterial[MatParamName.DiffuseTex] = panel.Visuals[0].Material.GetTexture("diffuse");

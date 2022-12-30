@@ -13,8 +13,8 @@
   <ItemGroup>
     <None Remove="Assets\Container_Env.hdr" />
     <None Remove="Assets\night_free_Env.hdr" />
+    <None Remove="Assets\Panel.glb" />
     <None Remove="Assets\Panel.hlsl" />
-    <None Remove="Assets\Panel_v001.glb" />
     <None Remove="Assets\pbrShader.hlsl" />
     <None Remove="Assets\TouchMenuDiffuse.png" />
     <None Remove="Assets\TouchMenuMRAO.png" />
@@ -23,7 +23,7 @@
     <Content Include="Assets\Container_Env.hdr">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="Assets\Panel_v001.glb">
+    <Content Include="Assets\Panel.glb">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="sourceFiles\TouchMenuDiffuse.png">
