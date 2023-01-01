@@ -76,27 +76,17 @@ namespace TouchMenuApp
         float buttonRough;
         string panelName;
 
-        // Holds all the current button states, access this for button states.
+        // Holds all the current button states, read this for button states.
         public static Dictionary<string, float> buttonStates;
 
-        // Constructor, requires a panel name. Both the gltf and hlsl files in /Assets need to use this name as well
+        // Constructor requires a panel name. Both the gltf and hlsl files in /Assets need to use this name as well
         public UIElements(string _panelName)
         {
             panelName = _panelName;
 
             // Load the panel model and material
-            //panelMaterial = new Material(Shader.FromFile(panelName + ".hlsl"));
             panel = Model.FromFile(panelName + ".glb", Shader.FromFile(panelName + ".hlsl"));
             panelMaterial = panel.Visuals[0].Material;
-
-            // Transfer material parameters from loaded model to the custom material
-            //panelMaterial[MatParamName.DiffuseTex] = panel.Visuals[0].Material.GetTexture("diffuse");
-            //panelMaterial[MatParamName.OcclusionTex] = panel.Visuals[0].Material.GetTexture("occlusion");
-            //panelMaterial[MatParamName.MetalTex] = panel.Visuals[0].Material.GetTexture("metal");
-            //panelMaterial[MatParamName.ColorTint] = panel.Visuals[0].Material.GetVector4("color");
-            //panelMaterial[MatParamName.MetallicAmount] = panel.Visuals[0].Material.GetFloat("metallic");
-            //panelMaterial[MatParamName.RoughnessAmount] = panel.Visuals[0].Material.GetFloat("roughness");
-            //panel.Visuals[0].Material = panelMaterial;
             panelMaterial.Transparency = Transparency.Blend;
 
             // A invisible mesh to be used as a manipulation volume for the various UI elements
@@ -106,8 +96,8 @@ namespace TouchMenuApp
             buttonStates = new Dictionary<string, float>();
 
             // Timer stuff
-            interval = 0.1d;
-            buttonDelay = 0.01d;
+            interval = 0.1d; // slider material update time, change for smoother updates
+            buttonDelay = 0.01d; // momentary button time delay
             interValTime = Time.Total + interval;
 
             // Check if the panel is a landscape or portrait aspect
@@ -239,6 +229,8 @@ namespace TouchMenuApp
 
             // Now draw the UI elements
             Hierarchy.Push(panelPose.ToMatrix());
+
+            // Storing all slidervalues in one array of 20, so need to split the h and v slider values by 10
             var hSliderCounter = 0;
             var vSliderCounter = 9;
             foreach (var item in panel.Nodes)
@@ -298,13 +290,13 @@ namespace TouchMenuApp
             UI.WindowEnd();
             UI.PopSurface();
 
-            // Holding the momentary button slightly to make sure it's picked up from wherever it's accessed.
-            if ((state & BtnState.JustActive) > 0)
+            if ((state & BtnState.JustActive) > 0 && IsInGripPose())
             {
                 interValTime = Time.Total + buttonDelay;
                 buttonStates[_label] = 1;
             }
 
+            // Holding the momentary button slightly to make sure it's picked up from wherever it's accessed.
             if (buttonStates[_label] == 1 & Time.Total > interValTime)
             {
                 buttonStates[_label] = 0;
@@ -330,7 +322,7 @@ namespace TouchMenuApp
             UI.WindowEnd();
             UI.PopSurface();
 
-            if ((state & BtnState.JustActive) > 0)
+            if ((state & BtnState.JustActive) > 0 && IsInGripPose())
             {
                 buttonStates[_label] = buttonStates[_label] == 1 ? 0 : 1;
                 interValTime = Time.Total + buttonDelay;
@@ -371,8 +363,8 @@ namespace TouchMenuApp
             Vec3 volumeAt = new Vec3(0, 0, 0);
             Vec3 volumeSize = new Vec3(0.065f, 0.01f, 0.01f);
 
-            BtnState volumeState = UI.VolumeAt(_nodeName + panelName + "HVolume", new Bounds(volumeAt, volumeSize), UIConfirm.Pinch, out Handed hand);
-            if (volumeState != BtnState.Inactive)
+            BtnState volumeState = UI.VolumeAt(_nodeName + panelName + "HVolume", new Bounds(volumeAt, volumeSize), UIConfirm.Push, out Handed hand);
+            if (volumeState != BtnState.Inactive & IsInGripPose())
             {
                 var result = System.Math.Clamp((Hierarchy.ToLocal(Input.Hand(hand).pinchPt).x + 0.03f) * 16f, 0f, 1f);
                 buttonStates[_label] = result;
@@ -394,8 +386,8 @@ namespace TouchMenuApp
             Vec3 volumeAt = new Vec3(0, 0, 0);
             Vec3 volumeSize = new Vec3(0.01f, 0.01f, 0.065f);
             
-            BtnState volumeState = UI.VolumeAt(_nodeName + panelName + "VVolume", new Bounds(volumeAt, volumeSize), UIConfirm.Pinch, out Handed hand);
-            if (volumeState != BtnState.Inactive)
+            BtnState volumeState = UI.VolumeAt(_nodeName + panelName + "VVolume", new Bounds(volumeAt, volumeSize), UIConfirm.Push, out Handed hand);
+            if (volumeState != BtnState.Inactive & IsInGripPose())
             {
                 var result = System.Math.Clamp((Hierarchy.ToLocal(Input.Hand(hand).pinchPt).z - 0.03f) * -16f, 0f, 1f);
                 buttonStates[_label] = result;
@@ -405,6 +397,21 @@ namespace TouchMenuApp
             UI.PopSurface();
 
             return currentValue;
+        }
+
+        // Check the state of the hand
+        bool IsInGripPose()
+        {
+            for (int h = 0; h < (int)Handed.Max; h++)
+            {
+                Hand hand = Input.Hand((Handed)h);
+                if (hand.IsGripped == true)
+                {
+                    Console.WriteLine("belrg");
+                    return true;
+                }
+            }
+            return false;
         }
 
         // Find the aspect of the panel model
