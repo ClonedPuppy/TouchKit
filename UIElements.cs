@@ -85,17 +85,18 @@ namespace TouchMenuApp
             panelName = _panelName;
 
             // Load the panel model and material
-            panelMaterial = new Material(Shader.FromFile(panelName + ".hlsl"));
+            //panelMaterial = new Material(Shader.FromFile(panelName + ".hlsl"));
             panel = Model.FromFile(panelName + ".glb", Shader.FromFile(panelName + ".hlsl"));
+            panelMaterial = panel.Visuals[0].Material;
 
             // Transfer material parameters from loaded model to the custom material
-            panelMaterial[MatParamName.DiffuseTex] = panel.Visuals[0].Material.GetTexture("diffuse");
-            panelMaterial[MatParamName.OcclusionTex] = panel.Visuals[0].Material.GetTexture("occlusion");
-            panelMaterial[MatParamName.MetalTex] = panel.Visuals[0].Material.GetTexture("metal");
-            panelMaterial[MatParamName.ColorTint] = panel.Visuals[0].Material.GetVector4("color");
-            panelMaterial[MatParamName.MetallicAmount] = panel.Visuals[0].Material.GetFloat("metallic");
-            panelMaterial[MatParamName.RoughnessAmount] = panel.Visuals[0].Material.GetFloat("roughness");
-            panel.Visuals[0].Material = panelMaterial;
+            //panelMaterial[MatParamName.DiffuseTex] = panel.Visuals[0].Material.GetTexture("diffuse");
+            //panelMaterial[MatParamName.OcclusionTex] = panel.Visuals[0].Material.GetTexture("occlusion");
+            //panelMaterial[MatParamName.MetalTex] = panel.Visuals[0].Material.GetTexture("metal");
+            //panelMaterial[MatParamName.ColorTint] = panel.Visuals[0].Material.GetVector4("color");
+            //panelMaterial[MatParamName.MetallicAmount] = panel.Visuals[0].Material.GetFloat("metallic");
+            //panelMaterial[MatParamName.RoughnessAmount] = panel.Visuals[0].Material.GetFloat("roughness");
+            //panel.Visuals[0].Material = panelMaterial;
             panelMaterial.Transparency = Transparency.Blend;
 
             // A invisible mesh to be used as a manipulation volume for the various UI elements
