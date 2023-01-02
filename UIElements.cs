@@ -79,13 +79,13 @@ namespace TouchMenuApp
         // Holds all the current button states, read this for button states.
         public static Dictionary<string, float> buttonStates;
 
-        // Constructor requires a panel name. Both the gltf and hlsl files in /Assets need to use this name as well
+        // Constructor requires a panel name. The gltf file in /Assets need to use this name as well
         public UIElements(string _panelName)
         {
             panelName = _panelName;
 
-            // Load the panel model and material
-            panel = Model.FromFile(panelName + ".glb", Shader.FromFile(panelName + ".hlsl"));
+            // Load the panel model and UI material
+            panel = Model.FromFile(panelName + ".glb", Shader.FromFile("UIShader.hlsl"));
             panelMaterial = panel.Visuals[0].Material;
             panelMaterial.Transparency = Transparency.Blend;
 
@@ -296,7 +296,7 @@ namespace TouchMenuApp
                 buttonStates[_label] = 1;
             }
 
-            // Holding the momentary button slightly to make sure it's picked up from wherever it's accessed.
+            // Holding the momentary button slightly to make sure it's picked up from wherever it's accessed (this might not be necessary?)
             if (buttonStates[_label] == 1 & Time.Total > interValTime)
             {
                 buttonStates[_label] = 0;
@@ -366,7 +366,7 @@ namespace TouchMenuApp
             BtnState volumeState = UI.VolumeAt(_nodeName + panelName + "HVolume", new Bounds(volumeAt, volumeSize), UIConfirm.Push, out Handed hand);
             if (volumeState != BtnState.Inactive & IsInGripPose())
             {
-                var result = System.Math.Clamp((Hierarchy.ToLocal(Input.Hand(hand).pinchPt).x + 0.03f) * 16f, 0f, 1f);
+                var result = System.Math.Clamp((Hierarchy.ToLocal(Input.Hand(hand)[FingerId.Index, JointId.Tip].Pose).position.x + 0.03f) * 16f, 0f, 1f);
                 buttonStates[_label] = result;
                 UI.PopSurface();
                 return result;
@@ -389,7 +389,7 @@ namespace TouchMenuApp
             BtnState volumeState = UI.VolumeAt(_nodeName + panelName + "VVolume", new Bounds(volumeAt, volumeSize), UIConfirm.Push, out Handed hand);
             if (volumeState != BtnState.Inactive & IsInGripPose())
             {
-                var result = System.Math.Clamp((Hierarchy.ToLocal(Input.Hand(hand).pinchPt).z - 0.03f) * -16f, 0f, 1f);
+                var result = System.Math.Clamp((Hierarchy.ToLocal(Input.Hand(hand)[FingerId.Index, JointId.Tip].Pose).position.z - 0.03f) * -16f, 0f, 1f);
                 buttonStates[_label] = result;
                 UI.PopSurface();
                 return result;
@@ -407,7 +407,6 @@ namespace TouchMenuApp
                 Hand hand = Input.Hand((Handed)h);
                 if (hand.IsGripped == true)
                 {
-                    Console.WriteLine("belrg");
                     return true;
                 }
             }
