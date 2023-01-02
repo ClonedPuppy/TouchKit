@@ -28,13 +28,13 @@ namespace TouchMenuApp
             foreach (var pair in UIElements.buttonStates)
             {
                 Text.Add(pair.Key + ": " + pair.Value.ToString("n1"), Matrix.T(V.XYZ(xPos, yPos, -0.06f)), testPanelTextStyle);
-                xPos = xPos - 1f;
+                xPos--;
                 testLabels++;
 
                 if (testLabels == 4 | testLabels == 8 | testLabels == 12 | testLabels == 16)
                 {
                     xPos = 1.5f;
-                    yPos = yPos - 0.35f;
+                    yPos -= 0.35f;
                 }
             }
             Hierarchy.Pop();

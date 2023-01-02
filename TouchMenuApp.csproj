@@ -14,10 +14,10 @@
     <None Remove="Assets\Container_Env.hdr" />
     <None Remove="Assets\night_free_Env.hdr" />
     <None Remove="Assets\Panel.glb" />
-    <None Remove="Assets\pbrShader.hlsl" />
     <None Remove="Assets\TouchMenuDiffuse.png" />
     <None Remove="Assets\TouchMenuMRAO.png" />
     <None Remove="Assets\UIShader.hlsl" />
+    <None Remove="sourceFiles\UI_Template_v001.blend1" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="Assets\Container_Env.hdr">
@@ -35,16 +35,11 @@
   </ItemGroup>
 
   <ItemGroup>
-    <SKShader Include="Assets\pbrShader.hlsl" />
     <SKShader Include="Assets\floor.hlsl" />
   </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="StereoKit" Version="0.3.7-preview.7" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <UpToDateCheckInput Remove="Assets\pbrShader.hlsl" />
   </ItemGroup>
 
   <ItemGroup>

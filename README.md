@@ -1,1 +1,1 @@
-# TouchMenu
+# TouchKit allows you to create touch panel UI interfaces within Blender, which can then be easily used in StereoKit. Documentation is on the way.
