@@ -22,3 +22,8 @@ Sliders:
 
 It is important to assign a unique name to all UI elements as this name is used to retrieve the state of the element.
 
+To finalize the touch panel design, use the Export function in Blender to export the scene as a .glb file. The exporter in the UI_Template file is already configured with the appropriate settings, including the option to only export renderable items. This ensures that reference images on the buttons are not included in the exported file.
+
+Once the .glb file has been generated, move it to the /Asset folder and update the panel name in the constructor to the name of the exported .glb file (excluding the .glb extension).
+
+After completing these steps, build the project to test out the new touch panel.
