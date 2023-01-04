@@ -17,6 +17,7 @@
     <None Remove="Assets\TouchMenuDiffuse.png" />
     <None Remove="Assets\TouchMenuMRAO.png" />
     <None Remove="Assets\UIShader.hlsl" />
+    <None Remove="Assets\UI_Template_v001.glb" />
     <None Remove="sourceFiles\UI_Template_v001.blend1" />
   </ItemGroup>
   <ItemGroup>
@@ -24,6 +25,9 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="Assets\Panel.glb">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Assets\UI_Template_v001.glb">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="sourceFiles\TouchMenuDiffuse.png">

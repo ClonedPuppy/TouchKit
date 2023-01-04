@@ -23,7 +23,7 @@ namespace TouchMenuApp
             Renderer.SkyLight = lighting;
             Renderer.EnableSky = true;
 
-            uiElements = new UIElements("Panel");
+            uiElements = new UIElements("UI_Template_v001");
             testPanel = new TestPanel();
 
             floorMaterial = new Material(Shader.FromFile("floor.hlsl"));
